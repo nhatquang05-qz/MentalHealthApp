@@ -1,57 +1,74 @@
-// navigation/AppNavigator.tsx
 import React from 'react';
-import { Image, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons'; // Import icon
+import { createStackNavigator } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
-// Import các màn hình
+// Screens
 import HomeScreen from '../screens/HomeScreen';
 import SurveyScreen from '../screens/SurveyScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
+import MusicScreen from '../screens/MusicScreen'; // Import MusicScreen
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-export default function AppNavigator() {
+function MainTabs() {
+  const { colors, isDark } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false, // Ẩn header mặc định
-        tabBarActiveTintColor: '#007AFF', // Màu cho tab đang active
-        tabBarInactiveTintColor: '#8e8e93', // Màu cho tab không active
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.subText,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          height: 90,
+          backgroundColor: colors.card,
+          height: 70,
+          paddingBottom: 10,
+          paddingTop: 10,
           borderTopWidth: 0,
-          elevation: 5,
+          elevation: 10,
+          shadowColor: isDark ? '#000' : '#ccc',
           shadowOpacity: 0.1,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',
-          marginBottom: 10,
-        },
-        tabBarIconStyle: {
-          marginTop: 10,
         },
         tabBarIcon: ({ focused, color, size }) => {
-
-          let iconPath;
-          const iconStyle = { width: size, height: size, tintColor: color };
+          let iconName: keyof typeof Ionicons.glyphMap = 'home';
 
           if (route.name === 'Home') {
-            iconPath = require('../../assets/images/home.png');
+            iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Survey') {
-            iconPath = require('../../assets/images/survey.png');
-          } else if (route.name === 'Setting') {
-            iconPath = require('../../assets/images/setting.png');
+            iconName = focused ? 'happy' : 'happy-outline';
+          } else if (route.name === 'Music') {
+            iconName = focused ? 'musical-notes' : 'musical-notes-outline';
+          } else if (route.name === 'Settings') {
+            iconName = focused ? 'settings' : 'settings-outline';
           }
-          return <Image source={iconPath} style={iconStyle} />;
+
+          return <Ionicons name={iconName} size={24} color={color} />;
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Survey" component={SurveyScreen} />
-      <Tab.Screen name="Setting" component={SettingsScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Trang Chủ' }} />
+      <Tab.Screen name="Survey" component={SurveyScreen} options={{ title: 'Khảo Sát' }} />
+      <Tab.Screen name="Music" component={MusicScreen} options={{ title: 'Thư Giãn' }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: 'Cài Đặt' }} />
     </Tab.Navigator>
+  );
+}
+
+export default function AppNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+    </Stack.Navigator>
   );
 }

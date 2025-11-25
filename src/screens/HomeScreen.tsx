@@ -1,4 +1,3 @@
-// screens/HomeScreen.tsx
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -10,11 +9,14 @@ import {
   Dimensions,
   SafeAreaView,
 } from 'react-native';
-// 1. Import LineChart từ thư viện mới - ĐÃ VÔ HIỆU HÓA
 import { LineChart } from 'react-native-gifted-charts';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
 
-// Dữ liệu mock cho các icon cảm xúc
+const screenWidth = Dimensions.get('window').width;
+
+// Dữ liệu mock 
 const emotions = [
   { name: 'Funny', img: require('../../assets/images/funny.png'), value: 5 },
   { name: 'Happy', img: require('../../assets/images/happy.png'), value: 4 },
@@ -23,57 +25,51 @@ const emotions = [
   { name: 'Cry', img: require('../../assets/images/cry.png'), value: 1 },
 ];
 
-// Dữ liệu mock cho biểu đồ (5 = Vui nhất, 1 = Tệ nhất) - ĐÃ VÔ HIỆU HÓA
 const chartData = [
-  { value: 4.5, label: '2' }, // T2
-  { value: 3, label: '3' },   // T3
-  { value: 4, label: '4' },   // T4
-  { value: 3.5, label: '5' }, // T5
-  { value: 4, label: '6' },   // T6
-  { value: 2.5, label: '7' }, // T7
-  { value: 5, label: 'CN' },  // CN
+  { value: 4.5, label: '2' }, 
+  { value: 3, label: '3' },   
+  { value: 4, label: '4' },   
+  { value: 3.5, label: '5' }, 
+  { value: 4, label: '6' },   
+  { value: 2.5, label: '7' }, 
+  { value: 5, label: 'CN' },  
 ];
 
 export default function HomeScreen() {
+  const { colors, isDark } = useTheme(); // Lấy theme
+  const navigation = useNavigation<any>();
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
 
-  // Hàm này tạo ra các nhãn Y (cột dọc) tương ứng với 5 icon cảm xúc
-  const getYAxisLabels = () => {
-    return [
-      { value: 1, label: 'Tệ' },
-      { value: 2, label: 'Buồn' },
-      { value: 3, label: 'Bình thường' },
-      { value: 4, label: 'Vui' },
-      { value: 5, label: 'Rất vui' },
-    ];
-  };
-  
- 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.brandName}>SoulCare</Text>
-          <TouchableOpacity>
-            <Ionicons name="notifications-outline" size={28} color="#4A4A4A" />
+          <View style={styles.logoContainer}>
+            <View style={[styles.logoIcon, { backgroundColor: colors.primary }]}>
+              <Text style={styles.logoText}>V</Text>
+            </View>
+            <Text style={[styles.brandName, { color: colors.text }]}>VHealth</Text>
+          </View>
+          <TouchableOpacity style={[styles.iconButton, { backgroundColor: isDark ? '#333' : 'transparent' }]}>
+            <Ionicons name="notifications-outline" size={28} color={colors.text} />
           </TouchableOpacity>
         </View>
 
         {/* Thẻ Cảm xúc */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Xin chào!</Text>
-          <Text style={styles.cardSubtitle}>Ngày hôm nay của bạn như thế nào?</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Xin chào!</Text>
+          <Text style={[styles.cardSubtitle, { color: colors.subText }]}>Ngày hôm nay của bạn như thế nào?</Text>
           <View style={styles.emotionContainer}>
             {emotions.map((emotion) => (
               <TouchableOpacity
                 key={emotion.name}
                 style={[
                   styles.emotionButton,
-                  selectedEmotion === emotion.name && styles.emotionSelected,
+                  selectedEmotion === emotion.name && { backgroundColor: isDark ? '#333' : '#f0f8ff', borderColor: colors.primary },
                 ]}
                 onPress={() => setSelectedEmotion(emotion.name)}
               >
@@ -83,145 +79,80 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Thẻ Biểu đồ (đã cập nhật) - ĐÃ VÔ HIỆU HÓA */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Biểu đồ cảm xúc</Text>
-          <Text style={styles.cardSubtitle}>Tuần trước</Text>
+        {/* Thẻ Biểu đồ */}
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Biểu đồ cảm xúc</Text>
+          <Text style={[styles.cardSubtitle, { color: colors.subText }]}>Tuần trước</Text>
           <View style={styles.chartContainer}>
             <LineChart
               data={chartData}
               height={220}
               isAnimated
-              curved // Làm mượt đường line
-              color1="#007AFF" // Màu đường line
-              dataPointsColor1="#007AFF" // Màu dấu chấm
-              startFillColor1="#007AFF" // Màu gradient bắt đầu
-              endFillColor1="#e6f2ff" // Màu gradient kết thúc
+              curved
+              color1={colors.primary}
+              dataPointsColor1={colors.primary}
+              startFillColor1={colors.primary}
+              endFillColor1={colors.card}
               startOpacity={0.8}
               endOpacity={0.1}
-              // Tùy chỉnh cột Y (cảm xúc)
-              yAxisLabelTexts={['Tệ', 'Buồn', 'BT', 'Vui', 'Rất vui']}
+              maxValue={5}
+              noOfSections={4} 
               yAxisLabelContainerStyle={{ width: 45 }}
               yAxisLabelSuffix=""
-              noOfSections={4} // Số lượng đường kẻ ngang (5 mức cảm xúc - 1)
-              maxValue={5}
-              // Tùy chỉnh cột X (ngày)
-              xAxisLabelTextStyle={styles.chartLabel}
-              // Tùy chỉnh dấu chấm
+              yAxisTextStyle={{ color: colors.subText }}
+
+              xAxisLabelTextStyle={{ color: colors.subText, fontSize: 12 }}
+              
               dataPointsRadius={5}
               dataPointsHeight={5}
               dataPointsWidth={5}
-              // Tắt các đường không cần thiết
+
               rulesType="solid"
-              rulesColor="#f0f0f0"
-              xAxisColor="#f0f0f0"
-              yAxisColor="#f0f0f0"
+              rulesColor={colors.border}
+              xAxisColor={colors.border}
+              yAxisColor={colors.border}
               hideYAxisText
             />
           </View>
         </View>
 
         {/* Thẻ Lối tắt */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Lối tắt</Text>
-          <TouchableOpacity style={styles.surveyButton}>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Lối tắt</Text>
+          <TouchableOpacity 
+            style={[styles.surveyButton, { backgroundColor: colors.primary }]}
+            onPress={() => navigation.navigate('Survey')}
+          >
             <Ionicons name="document-text-outline" size={20} color="#ffffff" />
             <Text style={styles.surveyButtonText}>Khảo sát</Text>
           </TouchableOpacity>
         </View>
+        <View style={{height: 20}} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-// StyleSheet (giữ nguyên)
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f4f7ff',
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  brandName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffb347',
-    backgroundColor: '#fff7e6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    color: '#8e8e93',
-    marginBottom: 20,
-  },
-  emotionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  emotionButton: {
-    padding: 8,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  emotionSelected: {
-    borderColor: '#007AFF',
-    backgroundColor: '#f0f8ff',
-  },
-  emotionIcon: {
-    width: 48,
-    height: 48,
-  },
-  chartContainer: {
-    paddingLeft: 0, // Điều chỉnh nếu biểu đồ bị lệch
-    paddingTop: 10,
-  },
-  chartLabel: {
-    color: '#666',
-    fontSize: 12,
-  },
-  surveyButton: {
-    flexDirection: 'row',
-    backgroundColor: '#007AFF',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  surveyButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
+  safeArea: { flex: 1 },
+  container: { flex: 1, paddingHorizontal: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 20 },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
+  logoIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
+  logoText: { color: '#fff', fontWeight: 'bold', fontSize: 20 },
+  brandName: { fontSize: 24, fontWeight: 'bold' },
+  iconButton: { padding: 8, borderRadius: 20 },
+  
+  card: { borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 },
+  cardTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
+  cardSubtitle: { fontSize: 14, marginBottom: 20 },
+  
+  emotionContainer: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
+  emotionButton: { padding: 8, borderRadius: 30, borderWidth: 2, borderColor: 'transparent' },
+  emotionIcon: { width: 48, height: 48 },
+  
+  chartContainer: { paddingLeft: 0, paddingTop: 10 },
+  
+  surveyButton: { flexDirection: 'row', paddingVertical: 14, paddingHorizontal: 20, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
+  surveyButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600', marginLeft: 8 },
 });
