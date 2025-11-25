@@ -11,7 +11,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 // 1. Import LineChart từ thư viện mới - ĐÃ VÔ HIỆU HÓA
-// import { LineChart } from 'react-native-gifted-charts';
+import { LineChart } from 'react-native-gifted-charts';
 import { Ionicons } from '@expo/vector-icons';
 
 // Dữ liệu mock cho các icon cảm xúc
@@ -24,7 +24,6 @@ const emotions = [
 ];
 
 // Dữ liệu mock cho biểu đồ (5 = Vui nhất, 1 = Tệ nhất) - ĐÃ VÔ HIỆU HÓA
-/*
 const chartData = [
   { value: 4.5, label: '2' }, // T2
   { value: 3, label: '3' },   // T3
@@ -34,13 +33,11 @@ const chartData = [
   { value: 2.5, label: '7' }, // T7
   { value: 5, label: 'CN' },  // CN
 ];
-*/
 
 export default function HomeScreen() {
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
 
   // Hàm này tạo ra các nhãn Y (cột dọc) tương ứng với 5 icon cảm xúc
-  /* - ĐÃ VÔ HIỆU HÓA VÌ KHÔNG DÙNG ĐẾN
   const getYAxisLabels = () => {
     return [
       { value: 1, label: 'Tệ' },
@@ -50,8 +47,8 @@ export default function HomeScreen() {
       { value: 5, label: 'Rất vui' },
     ];
   };
-  */
-
+  
+ 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
@@ -87,7 +84,6 @@ export default function HomeScreen() {
         </View>
 
         {/* Thẻ Biểu đồ (đã cập nhật) - ĐÃ VÔ HIỆU HÓA */}
-        {/*
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Biểu đồ cảm xúc</Text>
           <Text style={styles.cardSubtitle}>Tuần trước</Text>
@@ -124,7 +120,6 @@ export default function HomeScreen() {
             />
           </View>
         </View>
-        */}
 
         {/* Thẻ Lối tắt */}
         <View style={styles.card}>
