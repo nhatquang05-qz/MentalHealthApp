@@ -28,7 +28,9 @@ export default function SettingsScreen() {
   const [tempName, setTempName] = useState('');
   const [tempEmail, setTempEmail] = useState('');
 
-  // Cập nhật state tạm thời khi user thay đổi
+  const [reminderTime, setReminderTime] = useState('8:00 Tối');
+  const [surveyFrequency, setSurveyFrequency] = useState('Hàng ngày');
+
   useEffect(() => {
     if (user) {
       setTempName(user.name);
@@ -41,7 +43,6 @@ export default function SettingsScreen() {
   };
 
   const saveProfile = () => {
-    // Trong thực tế, gọi hàm updateProfile từ AuthContext
     setEditModalVisible(false);
     Alert.alert('Thành công', 'Hồ sơ đã được cập nhật!');
   };
@@ -53,7 +54,6 @@ export default function SettingsScreen() {
     ]);
   };
 
-  // --- COMPONENT CON: THẺ HỒ SƠ ---
   const renderProfileCard = () => {
     if (isGuest) {
       return (
@@ -110,14 +110,49 @@ export default function SettingsScreen() {
 
         {renderProfileCard()}
 
-        {/* Settings Group */}
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+            <View style={styles.settingItemRow}>
+                <View style={[styles.settingIconBox, { backgroundColor: colors.iconBg }]}>
+                    <Ionicons name="notifications-outline" size={24} color={colors.primary} />
+                </View>
+                <View style={{flex: 1}}>
+                    <Text style={[styles.settingLabel, { color: colors.text }]}>Nhắc nhở hằng ngày</Text>
+                    <TouchableOpacity 
+                        style={[styles.settingInputBox, { backgroundColor: isDark ? '#333' : '#F3F4F6', borderColor: colors.border }]}
+                        onPress={() => Alert.alert("Tính năng", "Chọn giờ nhắc nhở")}
+                    >
+                        <Text style={{ color: colors.text }}>{reminderTime}</Text>
+                        <Ionicons name="chevron-down" size={20} color={colors.subText} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <View style={{height: 16}} /> 
+
+            <View style={styles.settingItemRow}>
+                <View style={[styles.settingIconBox, { backgroundColor: colors.iconBg }]}>
+                    <Ionicons name="calendar-outline" size={24} color={colors.primary} />
+                </View>
+                <View style={{flex: 1}}>
+                    <Text style={[styles.settingLabel, { color: colors.text }]}>Tần suất khảo sát</Text>
+                    <TouchableOpacity 
+                        style={[styles.settingInputBox, { backgroundColor: isDark ? '#333' : '#F3F4F6', borderColor: colors.border }]}
+                        onPress={() => Alert.alert("Tính năng", "Chọn tần suất khảo sát")}
+                    >
+                        <Text style={{ color: colors.text }}>{surveyFrequency}</Text>
+                        <Ionicons name="chevron-down" size={20} color={colors.subText} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </View>
+
         <View style={[styles.card, { backgroundColor: colors.card }]}>
             <Text style={[styles.sectionHeader, { color: colors.text }]}>Tùy chỉnh</Text>
             
             <View style={[styles.row, { borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Ionicons name="notifications-outline" size={22} color={colors.subText} />
-                    <Text style={[styles.rowLabel, { color: colors.text }]}>Thông Báo</Text>
+                    <Ionicons name="notifications-circle-outline" size={22} color={colors.subText} />
+                    <Text style={[styles.rowLabel, { color: colors.text }]}>Nhận Thông Báo App</Text>
                 </View>
                 <Switch 
                   value={notificationsEnabled}
@@ -141,7 +176,6 @@ export default function SettingsScreen() {
             </View>
         </View>
 
-        {/* Privacy */}
         <View style={[styles.card, {backgroundColor: isDark ? '#1F2937' : '#E3F2FD'}]}>
             <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 8}}>
                 <Ionicons name="shield-checkmark-outline" size={24} color={colors.primary} />
@@ -163,7 +197,6 @@ export default function SettingsScreen() {
 
       </ScrollView>
 
-      {/* MODAL EDIT PROFILE (Chỉ hiện khi đã login) */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -194,7 +227,7 @@ export default function SettingsScreen() {
                 value={tempEmail}
                 onChangeText={setTempEmail}
                 keyboardType="email-address"
-                editable={false} // Email thường không cho sửa
+                editable={false} 
                 placeholderTextColor={colors.subText}
               />
             </View>
@@ -241,13 +274,19 @@ const styles = StyleSheet.create({
   rowLabel: { marginLeft: 12, fontSize: 16 },
   logoutButton: { flexDirection: 'row', justifyContent: 'center', marginTop: 10, alignItems: 'center', marginBottom: 40 },
   
-  // Guest UI
+  settingItemRow: { flexDirection: 'row', alignItems: 'flex-start' },
+  settingIconBox: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  settingLabel: { fontSize: 16, fontWeight: '500', marginBottom: 8 },
+  settingInputBox: { 
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, borderWidth: 1,
+  },
+
   guestTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 10, marginBottom: 4 },
   guestSubtitle: { fontSize: 14, marginBottom: 16 },
   authButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20, minWidth: 100, alignItems: 'center' },
   authButtonText: { color: '#fff', fontWeight: '600' },
 
-  // Modal Styles
   modalOverlay: {
     flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)',
   },

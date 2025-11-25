@@ -17,7 +17,13 @@ const historyData = [
 
 export default function SurveyScreen() {
   const { colors, isDark } = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+
+  // Hàm xử lý khi bấm nút Bắt đầu
+  const handleStartTest = (testId: string) => {
+    // Chuyển hướng sang màn hình SpecificTest và truyền loại test (id)
+    navigation.navigate('SpecificTest', { testType: testId });
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -47,7 +53,12 @@ export default function SurveyScreen() {
                   <Text style={[styles.cardDesc, { color: colors.subText }]}>{item.desc}</Text>
                 </View>
               </View>
-              <TouchableOpacity style={[styles.startButton, { backgroundColor: colors.primary }]}>
+              
+              {/* Cập nhật sự kiện onPress tại đây */}
+              <TouchableOpacity 
+                style={[styles.startButton, { backgroundColor: colors.primary }]}
+                onPress={() => handleStartTest(item.id)}
+              >
                 <Text style={styles.startButtonText}>Bắt Đầu</Text>
               </TouchableOpacity>
             </View>

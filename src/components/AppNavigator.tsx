@@ -4,13 +4,16 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 
-// Screens
 import HomeScreen from '../screens/HomeScreen';
 import SurveyScreen from '../screens/SurveyScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
-import MusicScreen from '../screens/MusicScreen'; // Import MusicScreen
+import MusicScreen from '../screens/MusicScreen';
+import DailyCheckInScreen from '../screens/DailyCheckInScreen';
+import DailyResultScreen from '../screens/DailyResultScreen';
+import SpecificTestScreen from '../screens/SpecificTestScreen';
+import SpecificResultScreen from '../screens/SpecificResultScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -69,6 +72,10 @@ export default function AppNavigator() {
       <Stack.Screen name="MainTabs" component={MainTabs} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="DailyCheckIn" component={DailyCheckInScreen} />
+      <Stack.Screen name="DailyResult" component={DailyResultScreen} />
+      <Stack.Screen name="SpecificTest" component={SpecificTestScreen} />
+      <Stack.Screen name="SpecificResult" component={SpecificResultScreen} />
     </Stack.Navigator>
   );
 }

@@ -17,25 +17,22 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Mặc định là Guest khi mới vào app
   const [isGuest, setIsGuest] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const login = (email: string) => {
-    // Giả lập login thành công
     setUser({ name: 'Người dùng mẫu', email: email });
     setIsGuest(false);
   };
 
   const register = (name: string, email: string) => {
-    // Giả lập đăng ký thành công
     setUser({ name: name, email: email });
     setIsGuest(false);
   };
 
   const logout = () => {
     setUser(null);
-    setIsGuest(true); // Quay về chế độ khách
+    setIsGuest(true); 
   };
 
   const continueAsGuest = () => {

@@ -36,9 +36,19 @@ const chartData = [
 ];
 
 export default function HomeScreen() {
-  const { colors, isDark } = useTheme(); // Lấy theme
+  const { colors, isDark } = useTheme(); 
   const navigation = useNavigation<any>();
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
+  
+  const currentStreak = 5; 
+  const hasCheckedInToday = false;
+
+  const handleEmotionSelect = (emotionName: string) => {
+    setSelectedEmotion(emotionName);
+    setTimeout(() => {
+        navigation.navigate('DailyCheckIn');
+    }, 300);
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -46,23 +56,34 @@ export default function HomeScreen() {
         style={styles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <View style={[styles.logoIcon, { backgroundColor: colors.primary }]}>
-              <Text style={styles.logoText}>V</Text>
-            </View>
-            <Text style={[styles.brandName, { color: colors.text }]}>VHealth</Text>
+          
+          <View style={styles.soulCareLogo}>
+            <Text style={styles.soulCareText}>SoulCare</Text>
           </View>
-          <TouchableOpacity style={[styles.iconButton, { backgroundColor: isDark ? '#333' : 'transparent' }]}>
-            <Ionicons name="notifications-outline" size={28} color={colors.text} />
-          </TouchableOpacity>
+          
+          <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+            <TouchableOpacity style={styles.notificationButton}>
+                <Ionicons name="notifications-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Thẻ Cảm xúc */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>Xin chào!</Text>
-          <Text style={[styles.cardSubtitle, { color: colors.subText }]}>Ngày hôm nay của bạn như thế nào?</Text>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+            <View>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>Check-in cảm xúc</Text>
+                <Text style={[styles.cardSubtitle, { color: colors.subText }]}>
+                    {hasCheckedInToday ? "Bạn đã check-in hôm nay rồi!" : "Ngày hôm nay của bạn thế nào?"}
+                </Text>
+            </View>
+            {!hasCheckedInToday && (
+                <View style={{backgroundColor: '#E3F2FD', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8}}>
+                    <Text style={{color: colors.primary, fontSize: 12, fontWeight: '600'}}>+1 Streak</Text>
+                </View>
+            )}
+          </View>
+          
           <View style={styles.emotionContainer}>
             {emotions.map((emotion) => (
               <TouchableOpacity
@@ -71,7 +92,7 @@ export default function HomeScreen() {
                   styles.emotionButton,
                   selectedEmotion === emotion.name && { backgroundColor: isDark ? '#333' : '#f0f8ff', borderColor: colors.primary },
                 ]}
-                onPress={() => setSelectedEmotion(emotion.name)}
+                onPress={() => handleEmotionSelect(emotion.name)}
               >
                 <Image source={emotion.img} style={styles.emotionIcon} />
               </TouchableOpacity>
@@ -79,9 +100,8 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Thẻ Biểu đồ */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>Biểu đồ cảm xúc</Text>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Biểu đồ tâm trạng</Text>
           <Text style={[styles.cardSubtitle, { color: colors.subText }]}>Tuần trước</Text>
           <View style={styles.chartContainer}>
             <LineChart
@@ -97,37 +117,47 @@ export default function HomeScreen() {
               endOpacity={0.1}
               maxValue={5}
               noOfSections={4} 
-              yAxisLabelContainerStyle={{ width: 45 }}
+              yAxisLabelContainerStyle={{ width: 30 }}
               yAxisLabelSuffix=""
-              yAxisTextStyle={{ color: colors.subText }}
-
+              yAxisTextStyle={{ color: colors.subText, fontSize: 12 }}
               xAxisLabelTextStyle={{ color: colors.subText, fontSize: 12 }}
-              
               dataPointsRadius={5}
               dataPointsHeight={5}
               dataPointsWidth={5}
-
               rulesType="solid"
               rulesColor={colors.border}
               xAxisColor={colors.border}
               yAxisColor={colors.border}
-              hideYAxisText
+              hideYAxisText={false}
             />
           </View>
         </View>
 
-        {/* Thẻ Lối tắt */}
-        <View style={[styles.card, { backgroundColor: colors.card }]}>
-          <Text style={[styles.cardTitle, { color: colors.text }]}>Lối tắt</Text>
-          <TouchableOpacity 
-            style={[styles.surveyButton, { backgroundColor: colors.primary }]}
-            onPress={() => navigation.navigate('Survey')}
-          >
-            <Ionicons name="document-text-outline" size={20} color="#ffffff" />
-            <Text style={styles.surveyButtonText}>Khảo sát</Text>
-          </TouchableOpacity>
+        <View style={{flexDirection: 'row', gap: 15}}>
+            <TouchableOpacity 
+                style={[styles.shortcutCard, { backgroundColor: colors.card, flex: 1 }]}
+                onPress={() => navigation.navigate('Survey')}
+            >
+                <View style={[styles.iconBox, { backgroundColor: '#E3F2FD' }]}>
+                    <Ionicons name="clipboard-outline" size={24} color={colors.primary} />
+                </View>
+                <Text style={[styles.shortcutTitle, { color: colors.text }]}>Làm Khảo sát</Text>
+                <Text style={{fontSize: 12, color: colors.subText}}>Đánh giá sức khỏe</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+                style={[styles.shortcutCard, { backgroundColor: colors.card, flex: 1 }]}
+                onPress={() => navigation.navigate('Music')}
+            >
+                <View style={[styles.iconBox, { backgroundColor: '#FFF0E6' }]}>
+                    <Ionicons name="headset-outline" size={24} color="#FF8C42" />
+                </View>
+                <Text style={[styles.shortcutTitle, { color: colors.text }]}>Nghe nhạc</Text>
+                <Text style={{fontSize: 12, color: colors.subText}}>Thư giãn tâm trí</Text>
+            </TouchableOpacity>
         </View>
-        <View style={{height: 20}} />
+        
+        <View style={{height: 30}} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -137,22 +167,49 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   container: { flex: 1, paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 20 },
-  logoContainer: { flexDirection: 'row', alignItems: 'center' },
-  logoIcon: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
-  logoText: { color: '#fff', fontWeight: 'bold', fontSize: 20 },
-  brandName: { fontSize: 24, fontWeight: 'bold' },
-  iconButton: { padding: 8, borderRadius: 20 },
   
-  card: { borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 },
-  cardTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
+  soulCareLogo: {
+    backgroundColor: '#FFB962',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  soulCareText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  notificationButton: {
+    backgroundColor: '#FFB962', 
+    width: 40,
+    height: 40,
+    borderRadius: 20,  
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  card: { 
+      borderRadius: 24, padding: 20, marginBottom: 20, 
+      shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, 
+      shadowOpacity: 0.05, shadowRadius: 8, elevation: 3 
+  },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
   cardSubtitle: { fontSize: 14, marginBottom: 20 },
   
-  emotionContainer: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' },
-  emotionButton: { padding: 8, borderRadius: 30, borderWidth: 2, borderColor: 'transparent' },
-  emotionIcon: { width: 48, height: 48 },
+  emotionContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 },
+  emotionButton: { padding: 8, borderRadius: 20, borderWidth: 2, borderColor: 'transparent', alignItems: 'center' },
+  emotionIcon: { width: 44, height: 44 },
   
-  chartContainer: { paddingLeft: 0, paddingTop: 10 },
+  chartContainer: { paddingLeft: 0, paddingTop: 10, marginLeft: -10 },
   
-  surveyButton: { flexDirection: 'row', paddingVertical: 14, paddingHorizontal: 20, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
-  surveyButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600', marginLeft: 8 },
+  shortcutCard: {
+      padding: 16, borderRadius: 24, 
+      shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, 
+      shadowOpacity: 0.03, elevation: 2
+  },
+  iconBox: {
+      width: 48, height: 48, borderRadius: 16, 
+      justifyContent: 'center', alignItems: 'center', marginBottom: 12
+  },
+  shortcutTitle: { fontWeight: 'bold', fontSize: 15, marginBottom: 4 }
 });

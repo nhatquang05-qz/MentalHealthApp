@@ -19,7 +19,6 @@ export default function RegisterScreen() {
       return;
     }
     register(name, email);
-    // Sau khi đăng ký, reset stack về Home (hoặc Settings) để cập nhật trạng thái đã đăng nhập
     navigation.reset({
       index: 0,
       routes: [{ name: 'MainTabs' }],
