@@ -40,8 +40,9 @@ export default function HomeScreen() {
   const navigation = useNavigation<any>();
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   
+  // Mock dữ liệu streak
   const currentStreak = 5; 
-  const hasCheckedInToday = false;
+  const hasCheckedInToday = false; 
 
   const handleEmotionSelect = (emotionName: string) => {
     setSelectedEmotion(emotionName);
@@ -56,19 +57,29 @@ export default function HomeScreen() {
         style={styles.container}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
         <View style={styles.header}>
           
+          {/* Logo SoulCare */}
           <View style={styles.soulCareLogo}>
             <Text style={styles.soulCareText}>SoulCare</Text>
           </View>
           
           <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
+            
+            <View style={[styles.streakContainer, { backgroundColor: isDark ? '#333' : '#FFF0E6' }]}>
+                <Ionicons name="flame" size={18} color="#FF6B6B" />
+                <Text style={[styles.streakText, { color: '#FF6B6B' }]}>{currentStreak}</Text>
+            </View>
+
+            {/* Nút thông báo */}
             <TouchableOpacity style={styles.notificationButton}>
                 <Ionicons name="notifications-outline" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
 
+        {/* Thẻ Cảm xúc / Check-in */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
             <View>
@@ -100,6 +111,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Thẻ Biểu đồ */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.cardTitle, { color: colors.text }]}>Biểu đồ tâm trạng</Text>
           <Text style={[styles.cardSubtitle, { color: colors.subText }]}>Tuần trước</Text>
@@ -133,6 +145,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Thẻ Lối tắt */}
         <View style={{flexDirection: 'row', gap: 15}}>
             <TouchableOpacity 
                 style={[styles.shortcutCard, { backgroundColor: colors.card, flex: 1 }]}
@@ -168,6 +181,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 20 },
   
+  // Styles cho Logo SoulCare
   soulCareLogo: {
     backgroundColor: '#FFB962',
     paddingHorizontal: 16,
@@ -179,14 +193,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+
+  // Styles cho Nút thông báo
   notificationButton: {
     backgroundColor: '#FFB962', 
     width: 40,
     height: 40,
-    borderRadius: 20,  
+    borderRadius: 20, 
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  // Styles cho Streak (đã thêm lại)
+  streakContainer: { 
+      flexDirection: 'row', alignItems: 'center', 
+      paddingHorizontal: 10, paddingVertical: 6, 
+      borderRadius: 20, gap: 4 
+  },
+  streakText: { fontWeight: '700', fontSize: 14 },
 
   card: { 
       borderRadius: 24, padding: 20, marginBottom: 20, 
