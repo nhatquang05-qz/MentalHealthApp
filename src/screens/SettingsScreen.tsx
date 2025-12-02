@@ -14,6 +14,7 @@ import {
   Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker'; // Import thư viện chọn ngày giờ
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
@@ -24,18 +25,32 @@ export default function SettingsScreen() {
   const navigation = useNavigation<any>();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  
+  // State cho Edit Profile
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [tempName, setTempName] = useState('');
   const [tempEmail, setTempEmail] = useState('');
 
-  const [reminderTime, setReminderTime] = useState('8:00 Tối');
+  // State cho Time Picker (Nhắc nhở)
+  const [reminderTime, setReminderTime] = useState('20:00'); // Format 24h hoặc AM/PM tùy thích
+  const [date, setDate] = useState(new Date()); // Đối tượng Date để picker sử dụng
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  // State cho Frequency Picker (Tần suất)
   const [surveyFrequency, setSurveyFrequency] = useState('Hàng ngày');
+  const [showFrequencyModal, setShowFrequencyModal] = useState(false);
+  const frequencyOptions = ['Hàng ngày', 'Mỗi 2 ngày', 'Mỗi 3 ngày', 'Hàng tuần', 'Cuối tuần'];
 
   useEffect(() => {
     if (user) {
       setTempName(user.name);
       setTempEmail(user.email);
     }
+    // Set thời gian mặc định cho object Date dựa trên string (demo đơn giản)
+    const now = new Date();
+    now.setHours(20);
+    now.setMinutes(0);
+    setDate(now);
   }, [user]);
 
   const handleToggleNotification = () => {
@@ -52,6 +67,22 @@ export default function SettingsScreen() {
       { text: 'Hủy', style: 'cancel' },
       { text: 'Đồng ý', style: 'destructive', onPress: logout }
     ]);
+  };
+
+  // Hàm xử lý khi chọn giờ xong
+  const onTimeChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+    }
+    
+    if (selectedDate) {
+      setDate(selectedDate);
+      // Format giờ hiển thị (HH:mm)
+      const hours = selectedDate.getHours();
+      const minutes = selectedDate.getMinutes();
+      const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      setReminderTime(formattedTime);
+    }
   };
 
   const renderProfileCard = () => {
@@ -111,6 +142,7 @@ export default function SettingsScreen() {
         {renderProfileCard()}
 
         <View style={[styles.card, { backgroundColor: colors.card }]}>
+            {/* Cài đặt Nhắc nhở */}
             <View style={styles.settingItemRow}>
                 <View style={[styles.settingIconBox, { backgroundColor: colors.iconBg }]}>
                     <Ionicons name="notifications-outline" size={24} color={colors.primary} />
@@ -119,16 +151,17 @@ export default function SettingsScreen() {
                     <Text style={[styles.settingLabel, { color: colors.text }]}>Nhắc nhở hằng ngày</Text>
                     <TouchableOpacity 
                         style={[styles.settingInputBox, { backgroundColor: isDark ? '#333' : '#F3F4F6', borderColor: colors.border }]}
-                        onPress={() => Alert.alert("Tính năng", "Chọn giờ nhắc nhở")}
+                        onPress={() => setShowTimePicker(true)}
                     >
                         <Text style={{ color: colors.text }}>{reminderTime}</Text>
-                        <Ionicons name="chevron-down" size={20} color={colors.subText} />
+                        <Ionicons name="time-outline" size={20} color={colors.subText} />
                     </TouchableOpacity>
                 </View>
             </View>
 
             <View style={{height: 16}} /> 
 
+            {/* Cài đặt Tần suất */}
             <View style={styles.settingItemRow}>
                 <View style={[styles.settingIconBox, { backgroundColor: colors.iconBg }]}>
                     <Ionicons name="calendar-outline" size={24} color={colors.primary} />
@@ -137,7 +170,7 @@ export default function SettingsScreen() {
                     <Text style={[styles.settingLabel, { color: colors.text }]}>Tần suất khảo sát</Text>
                     <TouchableOpacity 
                         style={[styles.settingInputBox, { backgroundColor: isDark ? '#333' : '#F3F4F6', borderColor: colors.border }]}
-                        onPress={() => Alert.alert("Tính năng", "Chọn tần suất khảo sát")}
+                        onPress={() => setShowFrequencyModal(true)}
                     >
                         <Text style={{ color: colors.text }}>{surveyFrequency}</Text>
                         <Ionicons name="chevron-down" size={20} color={colors.subText} />
@@ -197,6 +230,7 @@ export default function SettingsScreen() {
 
       </ScrollView>
 
+      {/* --- MODAL EDIT PROFILE --- */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -251,6 +285,90 @@ export default function SettingsScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* --- MODAL FREQUENCY SELECTION --- */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showFrequencyModal}
+        onRequestClose={() => setShowFrequencyModal(false)}
+      >
+        <TouchableOpacity 
+            style={styles.modalOverlay} 
+            activeOpacity={1} 
+            onPress={() => setShowFrequencyModal(false)}
+        >
+            <View style={[styles.modalContent, { backgroundColor: colors.card, paddingBottom: 20 }]}>
+                <Text style={[styles.modalTitle, { color: colors.text, marginBottom: 10 }]}>Chọn Tần Suất</Text>
+                {frequencyOptions.map((option, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        style={[
+                            styles.frequencyOption, 
+                            { borderBottomColor: colors.border },
+                            surveyFrequency === option && { backgroundColor: isDark ? '#333' : '#F0F9FF' }
+                        ]}
+                        onPress={() => {
+                            setSurveyFrequency(option);
+                            setShowFrequencyModal(false);
+                        }}
+                    >
+                        <Text style={{ 
+                            fontSize: 16, 
+                            color: surveyFrequency === option ? colors.primary : colors.text,
+                            fontWeight: surveyFrequency === option ? '600' : '400'
+                        }}>
+                            {option}
+                        </Text>
+                        {surveyFrequency === option && (
+                            <Ionicons name="checkmark" size={20} color={colors.primary} />
+                        )}
+                    </TouchableOpacity>
+                ))}
+            </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* --- TIME PICKER (Android & iOS logic) --- */}
+      {(showTimePicker) && (
+        Platform.OS === 'ios' ? (
+            // iOS Time Picker Modal
+            <Modal transparent={true} animationType="fade">
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#FFF', paddingBottom: 30 }]}>
+                        <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15}}>
+                            <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+                                <Text style={{color: colors.subText, fontSize: 16}}>Hủy</Text>
+                            </TouchableOpacity>
+                            <Text style={{fontWeight: 'bold', fontSize: 16, color: colors.text}}>Chọn giờ</Text>
+                            <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+                                <Text style={{color: colors.primary, fontWeight: 'bold', fontSize: 16}}>Xong</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <DateTimePicker
+                            testID="dateTimePicker"
+                            value={date}
+                            mode="time"
+                            is24Hour={true}
+                            display="spinner"
+                            onChange={onTimeChange}
+                            textColor={colors.text}
+                        />
+                    </View>
+                </View>
+            </Modal>
+        ) : (
+            // Android Time Picker
+            <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="time"
+                is24Hour={true}
+                display="default"
+                onChange={onTimeChange}
+            />
+        )
+      )}
+
     </SafeAreaView>
   );
 }
@@ -299,5 +417,11 @@ const styles = StyleSheet.create({
   inputLabel: { marginBottom: 6, fontSize: 14 },
   input: { height: 50, borderRadius: 12, paddingHorizontal: 15, fontSize: 16 },
   modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  modalBtn: { flex: 0.48, height: 50, borderRadius: 12, justifyContent: 'center', alignItems: 'center' }
+  modalBtn: { flex: 0.48, height: 50, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  
+  // Style cho Frequency Modal Item
+  frequencyOption: {
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+      paddingVertical: 15, paddingHorizontal: 10, borderBottomWidth: 0.5
+  }
 });

@@ -67,6 +67,14 @@ export default function HomeScreen() {
           
           <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
             
+            {/* --- NÚT SOS (MỚI) --- */}
+            <TouchableOpacity 
+                style={styles.sosButton}
+                onPress={() => navigation.navigate('SOS')}
+             >
+                <Text style={{fontWeight: '900', color: '#fff', fontSize: 12}}>SOS</Text>
+             </TouchableOpacity>
+
             <View style={[styles.streakContainer, { backgroundColor: isDark ? '#333' : '#FFF0E6' }]}>
                 <Ionicons name="flame" size={18} color="#FF6B6B" />
                 <Text style={[styles.streakText, { color: '#FF6B6B' }]}>{currentStreak}</Text>
@@ -145,10 +153,13 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Thẻ Lối tắt */}
-        <View style={{flexDirection: 'row', gap: 15}}>
+        {/* --- KHU VỰC TIỆN ÍCH (SỬA ĐỔI) --- */}
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Tiện ích</Text>
+        
+        <View style={{flexDirection: 'row', gap: 15, flexWrap: 'wrap'}}>
+            {/* Card Khảo sát */}
             <TouchableOpacity 
-                style={[styles.shortcutCard, { backgroundColor: colors.card, flex: 1 }]}
+                style={[styles.shortcutCard, { backgroundColor: colors.card, width: '47%' }]}
                 onPress={() => navigation.navigate('Survey')}
             >
                 <View style={[styles.iconBox, { backgroundColor: '#E3F2FD' }]}>
@@ -158,8 +169,9 @@ export default function HomeScreen() {
                 <Text style={{fontSize: 12, color: colors.subText}}>Đánh giá sức khỏe</Text>
             </TouchableOpacity>
 
+            {/* Card Nghe nhạc */}
             <TouchableOpacity 
-                style={[styles.shortcutCard, { backgroundColor: colors.card, flex: 1 }]}
+                style={[styles.shortcutCard, { backgroundColor: colors.card, width: '47%' }]}
                 onPress={() => navigation.navigate('Music')}
             >
                 <View style={[styles.iconBox, { backgroundColor: '#FFF0E6' }]}>
@@ -168,6 +180,48 @@ export default function HomeScreen() {
                 <Text style={[styles.shortcutTitle, { color: colors.text }]}>Nghe nhạc</Text>
                 <Text style={{fontSize: 12, color: colors.subText}}>Thư giãn tâm trí</Text>
             </TouchableOpacity>
+
+            {/* --- Card Gửi Lo Âu (MỚI) --- */}
+            <TouchableOpacity 
+                style={[styles.shortcutCard, { backgroundColor: colors.card, width: '100%', flexDirection: 'row', alignItems: 'center' }]}
+                onPress={() => navigation.navigate('BurnWorries')}
+            >
+                <View style={[styles.iconBox, { backgroundColor: '#FFEBEE', marginBottom: 0, marginRight: 15 }]}>
+                    <Ionicons name="bonfire-outline" size={24} color="#FF5252" />
+                </View>
+                <View>
+                    <Text style={[styles.shortcutTitle, { color: colors.text, marginBottom: 2 }]}>Gửi Lo Âu Đi</Text>
+                    <Text style={{fontSize: 12, color: colors.subText}}>Viết ra và giải tỏa căng thẳng ngay</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.subText} style={{marginLeft: 'auto'}} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+    style={[styles.shortcutCard, { backgroundColor: colors.card, width: '100%', flexDirection: 'row', alignItems: 'center' }]}
+    onPress={() => navigation.navigate('Gratitude')}
+>
+    <View style={[styles.iconBox, { backgroundColor: '#E8F5E9', marginBottom: 0, marginRight: 15 }]}>
+        <Ionicons name="leaf" size={24} color="#4CAF50" />
+    </View>
+    <View>
+        <Text style={[styles.shortcutTitle, { color: colors.text, marginBottom: 2 }]}>Nhật Ký Biết Ơn</Text>
+        <Text style={{fontSize: 12, color: colors.subText}}>Lưu giữ những điều tích cực</Text>
+    </View>
+    <Ionicons name="chevron-forward" size={20} color={colors.subText} style={{marginLeft: 'auto'}} />
+</TouchableOpacity>
+
+{/* Thẻ Lịch Sử Cảm Xúc */}
+<TouchableOpacity 
+    style={[styles.shortcutCard, { backgroundColor: colors.card, width: '47%' }]}
+    onPress={() => navigation.navigate('MoodHistory')}
+>
+    <View style={[styles.iconBox, { backgroundColor: '#FFF3E0' }]}>
+        <Ionicons name="calendar" size={24} color="#FF9800" />
+    </View>
+    <Text style={[styles.shortcutTitle, { color: colors.text }]}>Lịch Cảm Xúc</Text>
+    <Text style={{fontSize: 12, color: colors.subText}}>Theo dõi hành trình</Text>
+</TouchableOpacity>
+
         </View>
         
         <View style={{height: 30}} />
@@ -181,7 +235,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 20 },
   
-  // Styles cho Logo SoulCare
   soulCareLogo: {
     backgroundColor: '#FFB962',
     paddingHorizontal: 16,
@@ -194,7 +247,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  // Styles cho Nút thông báo
   notificationButton: {
     backgroundColor: '#FFB962', 
     width: 40,
@@ -204,7 +256,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Styles cho Streak (đã thêm lại)
+  // Style cho nút SOS mới
+  sosButton: {
+    backgroundColor: '#FF3B30',
+    width: 36, height: 36, borderRadius: 18,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#FF3B30', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, elevation: 3
+  },
+
   streakContainer: { 
       flexDirection: 'row', alignItems: 'center', 
       paddingHorizontal: 10, paddingVertical: 6, 
@@ -226,10 +285,17 @@ const styles = StyleSheet.create({
   
   chartContainer: { paddingLeft: 0, paddingTop: 10, marginLeft: -10 },
   
+  // Style cho tiêu đề section mới
+  sectionTitle: {
+      fontSize: 18, fontWeight: 'bold', marginBottom: 15, marginTop: 5
+  },
+
+  // Cập nhật lại shortcutCard để hỗ trợ layout linh hoạt hơn
   shortcutCard: {
       padding: 16, borderRadius: 24, 
       shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, 
-      shadowOpacity: 0.03, elevation: 2
+      shadowOpacity: 0.03, elevation: 2,
+      marginBottom: 5
   },
   iconBox: {
       width: 48, height: 48, borderRadius: 16, 

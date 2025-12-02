@@ -1,12 +1,60 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 
 export default function DailyResultScreen() {
   const { colors, isDark } = useTheme();
   const navigation = useNavigation<any>();
+
+  // Hàm xử lý lưu kết quả
+  const saveDailyResult = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0]; // Lấy ngày YYYY-MM-DD
+      
+      // Dữ liệu kết quả mẫu (Trong thực tế bạn có thể truyền từ màn hình trước sang)
+      const resultData = {
+        date: today,
+        mood: 'happy', // Giả sử kết quả là Tốt/Vui vẻ
+        score: 85,
+        note: 'Đã hoàn thành khảo sát hàng ngày'
+      };
+
+      // 1. Lấy dữ liệu lịch sử cũ từ bộ nhớ
+      const existingDataJson = await AsyncStorage.getItem('mood_history');
+      let existingData = existingDataJson ? JSON.parse(existingDataJson) : {};
+
+      // 2. Thêm/Cập nhật dữ liệu ngày hôm nay
+      // Cấu trúc này tuân theo thư viện react-native-calendars
+      existingData[today] = {
+        marked: true,
+        customStyles: {
+          container: {
+            backgroundColor: '#4CAF50', // Màu xanh lá (Happy)
+            borderRadius: 8,
+          },
+          text: {
+            color: 'white',
+            fontWeight: 'bold',
+          }
+        },
+        data: resultData // Lưu thông tin chi tiết để hiển thị sau này
+      };
+
+      // 3. Lưu ngược lại vào bộ nhớ
+      await AsyncStorage.setItem('mood_history', JSON.stringify(existingData));
+      
+      // 4. Thông báo và chuyển trang
+      Alert.alert("Thành công", "Kết quả đã được lưu vào lịch trình của bạn!");
+      navigation.navigate('MainTabs');
+      
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Lỗi", "Không thể lưu kết quả lúc này.");
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#121212' : '#FFF9E1' }]}>
@@ -32,7 +80,11 @@ export default function DailyResultScreen() {
             Mức độ căng thẳng của bạn ở mức trung bình{"\n"}— hãy thử nghỉ ngơi ngắn và các bài tập thở sâu.
           </Text>
 
-          <TouchableOpacity style={[styles.primaryButton, { backgroundColor: '#3995E9' }]} onPress={() => navigation.navigate('MainTabs')}>
+          {/* Cập nhật onPress để gọi hàm lưu */}
+          <TouchableOpacity 
+            style={[styles.primaryButton, { backgroundColor: '#3995E9' }]} 
+            onPress={saveDailyResult}
+          >
             <Text style={styles.primaryButtonText}>Lưu kết quả</Text>
           </TouchableOpacity>
 

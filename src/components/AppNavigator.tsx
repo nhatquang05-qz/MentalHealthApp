@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { Platform } from 'react-native'; 
 
 import HomeScreen from '../screens/HomeScreen';
 import SurveyScreen from '../screens/SurveyScreen';
@@ -14,6 +15,10 @@ import DailyCheckInScreen from '../screens/DailyCheckInScreen';
 import DailyResultScreen from '../screens/DailyResultScreen';
 import SpecificTestScreen from '../screens/SpecificTestScreen';
 import SpecificResultScreen from '../screens/SpecificResultScreen';
+import BurnWorriesScreen from '../screens/BurnWorriesScreen';
+import SOSScreen from '../screens/SOSScreen';
+import MoodHistoryScreen from '../screens/MoodHistoryScreen';
+import GratitudeScreen from '../screens/GratitudeScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -29,8 +34,8 @@ function MainTabs() {
         tabBarInactiveTintColor: colors.subText,
         tabBarStyle: {
           backgroundColor: colors.card,
-          height: 70,
-          paddingBottom: 10,
+          height: Platform.OS === 'ios' ? 95 : 70, 
+          paddingBottom: Platform.OS === 'ios' ? 30 : 10, 
           paddingTop: 10,
           borderTopWidth: 0,
           elevation: 10,
@@ -76,6 +81,10 @@ export default function AppNavigator() {
       <Stack.Screen name="DailyResult" component={DailyResultScreen} />
       <Stack.Screen name="SpecificTest" component={SpecificTestScreen} />
       <Stack.Screen name="SpecificResult" component={SpecificResultScreen} />
+      <Stack.Screen name="BurnWorries" component={BurnWorriesScreen} />
+      <Stack.Screen name="SOS" component={SOSScreen} options={{ presentation: 'modal' }} />
+      <Stack.Screen name="MoodHistory" component={MoodHistoryScreen} />
+      <Stack.Screen name="Gratitude" component={GratitudeScreen} />
     </Stack.Navigator>
   );
 }

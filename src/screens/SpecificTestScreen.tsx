@@ -24,11 +24,12 @@ export default function SpecificTestScreen() {
     }
   }, [currentIndex]);
 
-  const handleSelectOption = (index: number) => {
+const handleSelectOption = (optionIndex: number) => {
+    const point = questions[currentIndex].points[optionIndex]; // Lấy điểm từ mảng points
     const newAnswers = [...answers];
-    newAnswers[currentIndex] = index;
+    newAnswers[currentIndex] = point; // Lưu điểm vào mảng
     setAnswers(newAnswers);
-  };
+};
 
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
