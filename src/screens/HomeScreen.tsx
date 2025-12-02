@@ -26,12 +26,12 @@ const emotions = [
 ];
 
 const chartData = [
-  { value: 4.5, label: '2' }, 
+  { value: 4, label: '2' }, 
   { value: 3, label: '3' },   
-  { value: 4, label: '4' },   
-  { value: 3.5, label: '5' }, 
-  { value: 4, label: '6' },   
-  { value: 2.5, label: '7' }, 
+  { value: 2, label: '4' },   
+  { value: 5, label: '5' }, 
+  { value: 3, label: '6' },   
+  { value: 2, label: '7' }, 
   { value: 5, label: 'CN' },  
 ];
 
@@ -125,10 +125,10 @@ export default function HomeScreen() {
               dataPointsColor1={colors.primary}
               startFillColor1={colors.primary}
               endFillColor1={colors.card}
-              startOpacity={0.8}
-              endOpacity={0.1}
+              startOpacity={1}
+              endOpacity={1}
               maxValue={5}
-              noOfSections={4} 
+              noOfSections={5} 
               yAxisLabelContainerStyle={{ width: 30 }}
               yAxisLabelSuffix=""
               yAxisTextStyle={{ color: colors.subText, fontSize: 12 }}
