@@ -11,6 +11,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import MusicScreen from '../screens/MusicScreen';
+import QuoteScreen from '../screens/QuoteScreen';
 import DailyCheckInScreen from '../screens/DailyCheckInScreen';
 import DailyResultScreen from '../screens/DailyResultScreen';
 import SpecificTestScreen from '../screens/SpecificTestScreen';
@@ -19,6 +20,7 @@ import BurnWorriesScreen from '../screens/BurnWorriesScreen';
 import SOSScreen from '../screens/SOSScreen';
 import MoodHistoryScreen from '../screens/MoodHistoryScreen';
 import GratitudeScreen from '../screens/GratitudeScreen';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -85,6 +87,7 @@ export default function AppNavigator() {
       <Stack.Screen name="SOS" component={SOSScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen name="MoodHistory" component={MoodHistoryScreen} />
       <Stack.Screen name="Gratitude" component={GratitudeScreen} />
+      <Stack.Screen name="Quote" component={QuoteScreen} />
     </Stack.Navigator>
   );
 }
