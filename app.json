@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "FinMate",
-    "slug": "FinMate",
+    "name": "MentalHealthApp",
+    "slug": "mental-health-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -27,7 +27,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "b9046767-6966-4c44-ab10-e3a1ea194f88"
+        "projectId": "3a94133c-bf21-4565-acc1-87f312274416"
       }
     }
   }
