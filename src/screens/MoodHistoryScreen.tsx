@@ -7,66 +7,140 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Alert
 } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
-// Import PieChart
+import { useAuth } from '../context/AuthContext';
 import { PieChart } from 'react-native-gifted-charts';
 
-const { width } = Dimensions.get('window');
+
+const API_URL = 'http://10.0.116.186/api/data';
 
 export default function MoodHistoryScreen() {
   const { colors, isDark } = useTheme();
+  const { user } = useAuth();
   const navigation = useNavigation();
-  const [markedDates, setMarkedDates] = useState({});
+  const [markedDates, setMarkedDates] = useState<any>({});
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedData, setSelectedData] = useState<any>(null);
 
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
-    }, []),
+      if (user) {
+        fetchHistory();
+      }
+    }, [user])
   );
 
-  const loadHistory = async () => {
+  const fetchHistory = async () => {
     try {
-      const data = await AsyncStorage.getItem('mood_history');
-      if (data) {
-        setMarkedDates(JSON.parse(data));
-      }
+      const response = await fetch(`${API_URL}/test-result/${(user as any).id}`);
+      const data = await response.json();
+
+      if (!Array.isArray(data)) return;
+
+      const dailyCheckIns = data.filter((item: any) => item.testType === 'Daily Check-In');
+
+      const newMarkedDates: any = {};
+
+      dailyCheckIns.forEach((item: any) => {
+        const dateStr = item.createdAt.split('T')[0];
+
+        let moodType = 'happy';
+        let color = '#4CAF50'; 
+
+        if (item.score > 10) {
+          moodType = 'stress';
+          color = '#FF5252'; 
+        } else if (item.score > 5) {
+          moodType = 'normal';
+          color = '#FFC107'; 
+        }
+
+        newMarkedDates[dateStr] = {
+          marked: true,
+          customStyles: {
+            container: {
+              backgroundColor: color,
+              borderRadius: 8,
+            },
+            text: {
+              color: 'white',
+              fontWeight: 'bold',
+            },
+          },
+          data: {
+            mood: moodType,
+            score: item.score,
+            note: item.result, 
+            id: item.id
+          },
+        };
+      });
+
+      setMarkedDates(newMarkedDates);
     } catch (error) {
-      console.error(error);
+      console.error("Lỗi lấy lịch sử:", error);
     }
   };
 
-  // --- LOGIC TÍNH TOÁN THỐNG KÊ ---
+  
+  const finalMarkedDates = useMemo(() => {
+    
+    const marked = { ...markedDates };
+
+    if (selectedDate) {
+      
+      const currentStyle = marked[selectedDate] ? marked[selectedDate].customStyles : {};
+      const currentContainer = currentStyle.container ? currentStyle.container : {};
+      const currentText = currentStyle.text ? currentStyle.text : {};
+
+      
+      marked[selectedDate] = {
+        ...marked[selectedDate], 
+        customStyles: {
+          container: {
+            ...currentContainer,
+            borderWidth: 2, 
+            borderColor: colors.text, 
+            borderRadius: 8,
+          },
+          text: {
+            ...currentText,
+            color: marked[selectedDate] ? 'white' : colors.text, 
+          }
+        }
+      };
+    }
+    return marked;
+  }, [markedDates, selectedDate, colors.text]);
+
   const pieData = useMemo(() => {
-    const counts = { happy: 0, normal: 0, sad: 0, stress: 0 };
+    const counts = { happy: 0, normal: 0, stress: 0 };
     let total = 0;
 
     Object.values(markedDates).forEach((item: any) => {
       if (item.data && item.data.mood) {
-        // @ts-ignore
-        if (counts[item.data.mood] !== undefined) {
-          // @ts-ignore
-          counts[item.data.mood]++;
-          total++;
-        }
+        const mood = item.data.mood;
+        if (mood === 'happy') counts.happy++;
+        else if (mood === 'normal') counts.normal++;
+        else if (mood === 'stress') counts.stress++;
+        
+        total++;
       }
     });
 
     if (total === 0) return [];
 
-    // Tạo dữ liệu cho PieChart
     return [
       {
         value: counts.happy,
         color: '#4CAF50',
         text: `${Math.round((counts.happy / total) * 100)}%`,
-        label: 'Vui vẻ',
+        label: 'Tốt',
       },
       {
         value: counts.normal,
@@ -75,21 +149,14 @@ export default function MoodHistoryScreen() {
         label: 'Bình thường',
       },
       {
-        value: counts.sad,
-        color: '#2196F3',
-        text: `${Math.round((counts.sad / total) * 100)}%`,
-        label: 'Buồn',
-      },
-      {
         value: counts.stress,
         color: '#FF5252',
         text: `${Math.round((counts.stress / total) * 100)}%`,
-        label: 'Căng thẳng',
+        label: 'Cần chú ý',
       },
-    ].filter((item) => item.value > 0); // Chỉ hiện những cảm xúc có dữ liệu
+    ].filter((item) => item.value > 0);
   }, [markedDates]);
 
-  // Render chú thích cho biểu đồ
   const renderLegendComponent = () => {
     return (
       <View style={styles.legendWrapper}>
@@ -107,9 +174,7 @@ export default function MoodHistoryScreen() {
     const dateString = day.dateString;
     setSelectedDate(dateString);
 
-    // @ts-ignore
     if (markedDates[dateString] && markedDates[dateString].data) {
-      // @ts-ignore
       setSelectedData(markedDates[dateString].data);
     } else {
       setSelectedData(null);
@@ -127,7 +192,7 @@ export default function MoodHistoryScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        {/* 1. PHẦN LỊCH */}
+        {}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Calendar
             theme={{
@@ -141,13 +206,13 @@ export default function MoodHistoryScreen() {
               todayTextColor: colors.primary,
             }}
             markingType={'custom'}
-            markedDates={markedDates}
+            markedDates={finalMarkedDates} 
             onDayPress={onDayPress}
             enableSwipeMonths={true}
           />
         </View>
 
-        {/* 2. PHẦN CHI TIẾT NGÀY */}
+        {}
         {selectedDate && (
           <View style={styles.sectionContainer}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -155,15 +220,36 @@ export default function MoodHistoryScreen() {
             </Text>
             {selectedData ? (
               <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
-                <View style={[styles.moodIcon, { backgroundColor: '#E8F5E9' }]}>
-                  <Ionicons name="happy" size={32} color="#4CAF50" />
+                <View style={[styles.moodIcon, { 
+                    backgroundColor: selectedData.mood === 'happy' ? '#E8F5E9' : 
+                                     selectedData.mood === 'stress' ? '#FFEBEE' : '#FFF8E1' 
+                }]}>
+                  
+                  <Ionicons 
+                    name={
+                      selectedData.mood === 'happy' 
+                        ? "happy" 
+                        : selectedData.mood === 'stress' 
+                          ? "sad" 
+                          : "remove-circle"
+                    } 
+                    size={32} 
+                    color={
+                      selectedData.mood === 'happy' 
+                        ? "#4CAF50" 
+                        : selectedData.mood === 'stress' 
+                          ? "#FF5252" 
+                          : "#FFC107"
+                    } 
+                  />
+
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.moodTitle, { color: colors.text }]}>
                     {selectedData.mood === 'happy'
-                      ? 'Vui vẻ'
+                      ? 'Trạng thái Tốt'
                       : selectedData.mood === 'stress'
-                      ? 'Căng thẳng'
+                      ? 'Cần Chú Ý'
                       : 'Bình thường'}
                   </Text>
                   <Text style={[styles.moodDesc, { color: colors.subText }]}>
@@ -172,7 +258,7 @@ export default function MoodHistoryScreen() {
                 </View>
                 <View>
                   <Text style={[styles.score, { color: colors.primary }]}>
-                    {selectedData.score}đ
+                    {selectedData.score}/15
                   </Text>
                 </View>
               </View>
@@ -189,7 +275,7 @@ export default function MoodHistoryScreen() {
           </View>
         )}
 
-        {/* 3. PHẦN BIỂU ĐỒ THỐNG KÊ (MỚI) */}
+        {}
         {pieData.length > 0 && (
           <View
             style={[
@@ -202,7 +288,7 @@ export default function MoodHistoryScreen() {
               },
             ]}
           >
-            <Text style={[styles.chartTitle, { color: colors.text }]}>Tổng quan cảm xúc</Text>
+            <Text style={[styles.chartTitle, { color: colors.text }]}>Tổng quan tháng</Text>
 
             <View style={{ alignItems: 'center', marginVertical: 10 }}>
               <PieChart
@@ -216,20 +302,9 @@ export default function MoodHistoryScreen() {
                 fontWeight="bold"
                 centerLabelComponent={() => {
                   return (
-                    <View
-                      style={{
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 22,
-                          color: colors.text,
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {pieData.length}
+                    <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 22, color: colors.text, fontWeight: 'bold' }}>
+                        {Object.keys(markedDates).length}
                       </Text>
                       <Text style={{ fontSize: 12, color: colors.subText }}>Ngày</Text>
                     </View>
@@ -305,7 +380,6 @@ const styles = StyleSheet.create({
   moodDesc: { fontSize: 14 },
   score: { fontSize: 18, fontWeight: 'bold' },
 
-  // Styles cho biểu đồ
   chartTitle: {
     fontSize: 18,
     fontWeight: 'bold',

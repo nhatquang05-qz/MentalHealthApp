@@ -40,7 +40,7 @@ export default function RegisterScreen() {
     setContacts(newContacts);
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!name || !email || !password) {
       Alert.alert('Thông báo', 'Vui lòng điền đầy đủ thông tin cá nhân');
       return;
@@ -48,13 +48,13 @@ export default function RegisterScreen() {
 
     const validContacts = contacts.filter((c) => c.name.trim() !== '' && c.phone.trim() !== '');
 
-    register(name, email, validContacts);
+    // Gọi hàm register từ AuthContext (đã kết nối API)
+    // Lưu ý: Backend hiện tại có thể chưa lưu contacts, nhưng ta cứ gửi lên để sẵn sàng cho nâng cấp sau.
+    await register(name, email, password, validContacts);
 
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'MainTabs' }],
-    });
-    Alert.alert('Thành công', 'Tạo tài khoản và lưu số SOS thành công!');
+    // Sau khi đăng ký xong, backend yêu cầu đăng nhập. 
+    // Ta điều hướng người dùng quay lại màn hình Login.
+    navigation.goBack(); 
   };
 
   return (
@@ -129,7 +129,7 @@ export default function RegisterScreen() {
           </View>
         </View>
 
-        {}
+        {/* Phần SOS Contacts */}
         <View style={styles.section}>
           <View
             style={{

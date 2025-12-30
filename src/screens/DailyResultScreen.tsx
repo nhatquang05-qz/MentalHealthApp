@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,50 +9,69 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext'; // Import AuthContext để lấy user ID
+import { useNavigation, useRoute } from '@react-navigation/native';
+
+// Đổi IP này thành IP máy tính của bạn
+const API_URL = 'http://10.0.116.186:3000/api/data';
 
 export default function DailyResultScreen() {
   const { colors, isDark } = useTheme();
+  const { user } = useAuth();
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+
+  // Lấy điểm số từ params (nếu không có thì mặc định 0)
+  const score = route.params?.score || 0;
+  
+  // State để hiển thị text kết quả
+  const [resultText, setResultText] = useState('');
+  const [description, setDescription] = useState('');
+
+  // Đánh giá kết quả dựa trên điểm số (0 - 15 điểm)
+  useEffect(() => {
+    if (score <= 5) {
+      setResultText('Trạng thái Tốt');
+      setDescription('Tâm trạng của bạn khá ổn định. Hãy duy trì thói quen tốt này nhé!');
+    } else if (score <= 10) {
+      setResultText('Căng thẳng Nhẹ');
+      setDescription('Bạn có chút lo âu. Hãy thử nghỉ ngơi ngắn và các bài tập thở sâu.');
+    } else {
+      setResultText('Cần Chú Ý');
+      setDescription('Mức độ căng thẳng khá cao. Bạn nên trò chuyện với ai đó hoặc thư giãn ngay.');
+    }
+  }, [score]);
 
   const saveDailyResult = async () => {
+    if (!user) {
+      Alert.alert("Lỗi", "Vui lòng đăng nhập để lưu kết quả.");
+      return;
+    }
+
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch(`${API_URL}/test-result`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: (user as any).id || 1, // Lấy ID user từ context
+          testType: 'Daily Check-In',
+          score: score,
+          result: resultText
+        })
+      });
 
-      const resultData = {
-        date: today,
-        mood: 'happy',
-        score: 85,
-        note: 'Đã hoàn thành khảo sát hàng ngày',
-      };
+      const data = await response.json();
 
-      const existingDataJson = await AsyncStorage.getItem('mood_history');
-      let existingData = existingDataJson ? JSON.parse(existingDataJson) : {};
-
-      existingData[today] = {
-        marked: true,
-        customStyles: {
-          container: {
-            backgroundColor: '#4CAF50',
-            borderRadius: 8,
-          },
-          text: {
-            color: 'white',
-            fontWeight: 'bold',
-          },
-        },
-        data: resultData,
-      };
-
-      await AsyncStorage.setItem('mood_history', JSON.stringify(existingData));
-
-      Alert.alert('Thành công', 'Kết quả đã được lưu vào lịch trình của bạn!');
-      navigation.navigate('MainTabs');
+      if (response.ok) {
+        Alert.alert('Thành công', 'Kết quả đã được lưu vào hệ thống!');
+        navigation.navigate('MainTabs');
+      } else {
+        Alert.alert('Thất bại', data.message || 'Không lưu được dữ liệu.');
+      }
     } catch (error) {
       console.error(error);
-      Alert.alert('Lỗi', 'Không thể lưu kết quả lúc này.');
+      Alert.alert('Lỗi', 'Không thể kết nối đến server backend.');
     }
   };
 
@@ -73,15 +92,14 @@ export default function DailyResultScreen() {
           </View>
 
           <Text style={[styles.congratsText, { color: colors.text }]}>
-            Bạn đã hoàn thành khảo sát hằng ngày
+            {resultText} (Điểm: {score}/15)
           </Text>
 
           <Text style={[styles.resultDesc, { color: colors.subText }]}>
-            Mức độ căng thẳng của bạn ở mức trung bình{'\n'}— hãy thử nghỉ ngơi ngắn và các bài tập
-            thở sâu.
+            {description}
           </Text>
 
-          {}
+          {/* Nút Lưu Kết Quả */}
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: '#3995E9' }]}
             onPress={saveDailyResult}
@@ -91,7 +109,7 @@ export default function DailyResultScreen() {
 
           <TouchableOpacity
             style={[styles.secondaryButton, { borderColor: colors.border }]}
-            onPress={() => navigation.navigate('DailyCheckIn')}
+            onPress={() => navigation.replace('DailyCheckIn')}
           >
             <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
               Làm lại khảo sát
