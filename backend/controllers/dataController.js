@@ -33,14 +33,10 @@ exports.saveTestResult = async (req, res) => {
     
     if (testType === 'Daily Check-In') {
       const today = new Date();
-      
       today.setHours(0, 0, 0, 0);
-      
       const tomorrow = new Date(today);
-      
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      
       await TestResult.destroy({
         where: {
           userId,
@@ -51,9 +47,8 @@ exports.saveTestResult = async (req, res) => {
           }
         }
       });
-      console.log(`Đã dọn dẹp Daily Check-In cũ (nếu có) cho user ${userId} ngày ${today.toISOString().split('T')[0]}`);
+      console.log(`Đã dọn dẹp Daily Check-In cũ cho user ${userId}`);
     }
-    
 
     const detailsString = Array.isArray(details) ? JSON.stringify(details) : details;
 
@@ -65,11 +60,28 @@ exports.saveTestResult = async (req, res) => {
       details: detailsString 
     });
  
+    
+    let notifTitle = 'Hoàn thành đánh giá';
+    let notifMessage = '';
+    let notifType = 'success';
+
+    if (testType === 'Daily Check-In') {
+      notifTitle = 'Check-in hoàn tất';
+      notifMessage = 'Bạn đã checkin cảm xúc ngày hôm nay rồi. Hãy theo dõi cảm xúc của bạn trong lịch cảm xúc nhé!';
+      
+      notifType = 'daily_checkin'; 
+    } else {
+      notifTitle = 'Kết quả bài test';
+      notifMessage = `Bạn vừa hoàn thành bài kiểm tra ${testType}. Kết quả: ${result}. Hãy xem chi tiết và lời khuyên nhé!`;
+      
+      notifType = `test_result:${newTest.id}`;
+    }
+
     await Notification.create({
       userId,
-      title: 'Hoàn thành đánh giá',
-      message: `Bạn vừa hoàn thành bài kiểm tra ${testType}. Kết quả: ${result}. Hãy xem chi tiết và lời khuyên nhé!`,
-      type: 'success'
+      title: notifTitle,
+      message: notifMessage,
+      type: notifType
     });
 
     res.status(201).json({ message: 'Đã lưu kết quả test và tạo thông báo', data: newTest });
@@ -82,7 +94,6 @@ exports.saveTestResult = async (req, res) => {
 exports.getTestHistory = async (req, res) => {
   try {
     const { userId } = req.params;
-    
     const targetId = userId || req.query.userId;
 
     if (!targetId) {

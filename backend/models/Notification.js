@@ -5,32 +5,36 @@ const Notification = sequelize.define('Notification', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true
+    primaryKey: true,
   },
   userId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'id',
+    },
   },
   title: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
   },
   message: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   type: {
-    type: DataTypes.ENUM('info', 'warning', 'success', 'reminder'),
-    defaultValue: 'info'
+    
+    type: DataTypes.STRING, 
+    allowNull: false,
+    defaultValue: 'info',
   },
-  isRead: { 
+  isRead: {
     type: DataTypes.BOOLEAN,
-    defaultValue: false
+    defaultValue: false,
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
-  }
+}, {
+  timestamps: true, 
 });
 
 module.exports = Notification;

@@ -77,10 +77,10 @@ export default function HomeScreen() {
   const getEmotionImagePoint = (score: number) => {
     let imgSource;
 
-    if (score <= 3) imgSource = emotionIcons.funny;
-    else if (score <= 6) imgSource = emotionIcons.happy;
-    else if (score <= 9) imgSource = emotionIcons.normal;
-    else if (score <= 12) imgSource = emotionIcons.sad;
+    if (score >= 13) imgSource = emotionIcons.funny;
+    else if (score >= 10) imgSource = emotionIcons.happy;
+    else if (score >= 7) imgSource = emotionIcons.normal;
+    else if (score >= 4) imgSource = emotionIcons.sad;
     else imgSource = emotionIcons.cry;
 
     return (
@@ -125,7 +125,6 @@ export default function HomeScreen() {
           return {
             value: item.score,
             label,
-
             customDataPoint: () => getEmotionImagePoint(item.score),
           };
         });

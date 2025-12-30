@@ -32,15 +32,21 @@ export default function DailyResultScreen() {
   const processedRef = useRef(false);
 
   useEffect(() => {
-    if (score <= 5) {
+    if (score >= 11) {
       setResultText('Trạng thái Tốt');
-      setDescription('Tâm trạng của bạn khá ổn định. Hãy duy trì thói quen tốt này nhé!');
-    } else if (score <= 10) {
-      setResultText('Căng thẳng Nhẹ');
-      setDescription('Bạn có chút lo âu. Hãy thử nghỉ ngơi ngắn và các bài tập thở sâu.');
+      setDescription(
+        'Tâm trạng của bạn khá ổn định và tích cực. Hãy duy trì thói quen tốt này nhé!',
+      );
+    } else if (score >= 6) {
+      setResultText('Bình thường');
+      setDescription(
+        'Bạn có chút lo âu hoặc mệt mỏi nhẹ. Hãy thử nghỉ ngơi ngắn và các bài tập thở sâu.',
+      );
     } else {
       setResultText('Cần Chú Ý');
-      setDescription('Mức độ căng thẳng khá cao. Bạn nên trò chuyện với ai đó hoặc thư giãn ngay.');
+      setDescription(
+        'Mức độ căng thẳng cao hoặc tâm trạng không tốt. Bạn nên trò chuyện với ai đó hoặc thư giãn ngay.',
+      );
     }
   }, [score]);
 
@@ -107,7 +113,12 @@ export default function DailyResultScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View style={styles.iconContainer}>
-            <Ionicons name="sparkles" size={40} color="#FFD700" />
+            {}
+            <Ionicons
+              name={score >= 11 ? 'sparkles' : score >= 6 ? 'remove-circle' : 'warning'}
+              size={40}
+              color={score >= 11 ? '#4CAF50' : score >= 6 ? '#FFC107' : '#FF5252'}
+            />
           </View>
 
           <Text style={[styles.congratsText, { color: colors.text }]}>

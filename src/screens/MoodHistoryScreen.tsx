@@ -44,18 +44,22 @@ export default function MoodHistoryScreen() {
       if (!Array.isArray(data)) return;
       const dailyCheckIns = data.filter((item: any) => item.testType === 'Daily Check-In');
       const newMarkedDates: any = {};
+
       dailyCheckIns.forEach((item: any) => {
         const dateStr = item.createdAt.split('T')[0];
 
-        let moodType = 'happy';
-        let color = '#4CAF50';
+        let moodType = 'stress';
+        let color = '#FF5252';
+        let displayNote = 'Căng thẳng cao. Hãy nghỉ ngơi ngay.';
 
-        if (item.score > 10) {
-          moodType = 'stress';
-          color = '#FF5252';
-        } else if (item.score > 5) {
+        if (item.score >= 10) {
+          moodType = 'happy';
+          color = '#4CAF50';
+          displayNote = 'Tâm trạng tích cực. Hãy duy trì nhé!';
+        } else if (item.score >= 5) {
           moodType = 'normal';
           color = '#FFC107';
+          displayNote = 'Tâm trạng bình thường. Thư giãn chút nhé.';
         }
 
         newMarkedDates[dateStr] = {
@@ -73,7 +77,8 @@ export default function MoodHistoryScreen() {
           data: {
             mood: moodType,
             score: item.score,
-            note: item.result,
+
+            note: displayNote,
             id: item.id,
           },
         };

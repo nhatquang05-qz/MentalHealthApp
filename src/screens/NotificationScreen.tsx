@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -27,10 +28,12 @@ interface NotificationItem {
 export default function NotificationScreen() {
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [fetchingTest, setFetchingTest] = useState(false);
 
   useEffect(() => {
     fetchNotifications();
@@ -39,7 +42,7 @@ export default function NotificationScreen() {
   const fetchNotifications = async () => {
     if (!user) return;
     try {
-      const response = await fetch(`${API_URL}/notifications?userId=${user.id}`);
+      const response = await fetch(`${API_URL}/notifications?userId=${(user as any).id}`);
       const data = await response.json();
       if (response.ok) {
         setNotifications(data);
@@ -53,18 +56,71 @@ export default function NotificationScreen() {
   };
 
   const handleMarkAsRead = async (item: NotificationItem) => {
-    if (item.isRead) return;
+    if (!item.isRead) {
+      try {
+        await fetch(`${API_URL}/notifications/${item.id}/read`, {
+          method: 'PUT',
+        });
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)),
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  const handleItemPress = async (item: NotificationItem) => {
+    await handleMarkAsRead(item);
+
+    if (item.type === 'daily_checkin') {
+      navigation.navigate('MoodHistory');
+    } else if (item.type && item.type.startsWith('test_result:')) {
+      const testId = item.type.split(':')[1];
+      fetchAndNavigateToResult(testId);
+    } else {
+    }
+  };
+
+  const fetchAndNavigateToResult = async (testId: string) => {
+    if (!user) return;
+    setFetchingTest(true);
     try {
-      await fetch(`${API_URL}/notifications/${item.id}/read`, {
-        method: 'PUT',
-      });
-      setNotifications((prev) => prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)));
+      const response = await fetch(`${API_URL}/data/test-result/${(user as any).id}`);
+      const data = await response.json();
+
+      if (response.ok && Array.isArray(data)) {
+        const targetTest = data.find((t: any) => t.id.toString() === testId);
+
+        if (targetTest) {
+          navigation.navigate('SpecificResult', {
+            resultData: {
+              ...targetTest,
+
+              details:
+                typeof targetTest.details === 'string'
+                  ? JSON.parse(targetTest.details)
+                  : targetTest.details,
+            },
+          });
+        } else {
+          Alert.alert('Thông báo', 'Không tìm thấy dữ liệu bài kiểm tra này (có thể đã bị xóa).');
+        }
+      } else {
+        Alert.alert('Lỗi', 'Không tải được danh sách bài kiểm tra.');
+      }
     } catch (error) {
       console.error(error);
+      Alert.alert('Lỗi', 'Không thể kết nối đến server.');
+    } finally {
+      setFetchingTest(false);
     }
   };
 
   const getIcon = (type: string) => {
+    if (type === 'daily_checkin') return 'calendar';
+    if (type && type.startsWith('test_result')) return 'clipboard';
+
     switch (type) {
       case 'success':
         return 'checkmark-circle';
@@ -78,6 +134,9 @@ export default function NotificationScreen() {
   };
 
   const getColor = (type: string) => {
+    if (type === 'daily_checkin') return '#FF9800';
+    if (type && type.startsWith('test_result')) return '#9C27B0';
+
     switch (type) {
       case 'success':
         return '#4CAF50';
@@ -96,8 +155,9 @@ export default function NotificationScreen() {
         styles.itemContainer,
         { backgroundColor: item.isRead ? colors.card : isDark ? '#2C3E50' : '#E3F2FD' },
       ]}
-      onPress={() => handleMarkAsRead(item)}
+      onPress={() => handleItemPress(item)}
       activeOpacity={0.7}
+      disabled={fetchingTest}
     >
       <View style={styles.iconContainer}>
         <Ionicons name={getIcon(item.type) as any} size={28} color={getColor(item.type)} />
@@ -130,26 +190,46 @@ export default function NotificationScreen() {
       {loading ? (
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
       ) : (
-        <FlatList
-          data={notifications}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true);
-                fetchNotifications();
-              }}
-            />
-          }
-          ListEmptyComponent={
-            <Text style={{ textAlign: 'center', color: colors.subText, marginTop: 50 }}>
-              Bạn chưa có thông báo nào.
-            </Text>
-          }
-        />
+        <>
+          <FlatList
+            data={notifications}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => {
+                  setRefreshing(true);
+                  fetchNotifications();
+                }}
+              />
+            }
+            ListEmptyComponent={
+              <Text style={{ textAlign: 'center', color: colors.subText, marginTop: 50 }}>
+                Bạn chưa có thông báo nào.
+              </Text>
+            }
+          />
+          {}
+          {fetchingTest && (
+            <View
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: 'rgba(0,0,0,0.3)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+              ]}
+            >
+              <View style={{ backgroundColor: colors.card, padding: 20, borderRadius: 10 }}>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={{ marginTop: 10, color: colors.text }}>Đang tải bài kiểm tra...</Text>
+              </View>
+            </View>
+          )}
+        </>
       )}
     </SafeAreaView>
   );

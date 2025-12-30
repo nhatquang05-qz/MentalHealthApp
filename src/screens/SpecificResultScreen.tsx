@@ -30,7 +30,12 @@ export default function SpecificResultScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const { title, score, testType, isCritical, answers, fromHistory } = route.params;
+  const rawParams = route.params || {};
+  const data = rawParams.resultData || rawParams;
+
+  const { title, score, testType, isCritical } = data;
+  const answers = data.answers || data.details || [];
+  const fromHistory = data.fromHistory || !!data.id || !!rawParams.resultData;
 
   const [modalVisible, setModalVisible] = useState(false);
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
@@ -47,6 +52,29 @@ export default function SpecificResultScreen() {
 
   const currentTestData = testData[testType as keyof typeof testData];
 
+  if (!currentTestData) {
+    return (
+      <SafeAreaView
+        style={[
+          styles.safeArea,
+          {
+            backgroundColor: isDark ? '#121212' : '#FFF9E1',
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
+        ]}
+      >
+        <Text style={{ color: colors.text }}>Không tìm thấy dữ liệu bài kiểm tra ({testType})</Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={{ marginTop: 20, padding: 10 }}
+        >
+          <Text style={{ color: colors.primary }}>Quay lại</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   const getResultAnalysis = () => {
     const normalResult =
       currentTestData.results.find((r) => score >= r.min && score <= r.max) ||
@@ -54,19 +82,22 @@ export default function SpecificResultScreen() {
     const severeResult = currentTestData.results[currentTestData.results.length - 1];
 
     if (isCritical) {
+      const warningMsg =
+        '\n\n(Lưu ý: Câu trả lời về ý định làm hại bản thân của bạn là một dấu hiệu rất nghiêm trọng, hãy ưu tiên tìm sự trợ giúp y tế.)';
+
       if (normalResult.min === severeResult.min) {
         return {
           ...normalResult,
-          description:
-            normalResult.description +
-            '\n\n(Lưu ý: Câu trả lời về ý định làm hại bản thân của bạn là một dấu hiệu rất nghiêm trọng, hãy ưu tiên tìm sự trợ giúp y tế.)',
+
+          details: normalResult.details + warningMsg,
         };
       } else {
         return {
           ...severeResult,
-          description:
-            'Mặc dù tổng điểm đánh giá của bạn chưa ở mức cao nhất, nhưng câu trả lời về ý định làm hại bản thân là một dấu hiệu nghiêm trọng cần được chú ý đặc biệt.\n\nHãy tìm kiếm sự hỗ trợ ngay lập tức.',
           level: 'Cần Chú Ý Đặc Biệt',
+
+          details:
+            'Mặc dù tổng điểm đánh giá của bạn chưa ở mức cao nhất, nhưng câu trả lời về ý định làm hại bản thân là một dấu hiệu nghiêm trọng cần được chú ý đặc biệt.\n\nHãy tìm kiếm sự hỗ trợ ngay lập tức.',
         };
       }
     }
@@ -124,10 +155,7 @@ export default function SpecificResultScreen() {
 
     for (const server of servers) {
       if (success) break;
-
       try {
-        console.log(`Đang thử kết nối server: ${server}`);
-
         const query = `
           [out:json][timeout:25];
           (
@@ -146,35 +174,27 @@ export default function SpecificResultScreen() {
         });
 
         const textResponse = await response.text();
+        const data = JSON.parse(textResponse);
 
-        try {
-          const data = JSON.parse(textResponse);
+        const realCenters = data.elements
+          .map((item: any) => ({
+            id: item.id,
+            name: item.tags.name || item.tags['name:en'] || 'Cơ sở y tế',
+            address: formatOSMAddress(item.tags),
+            phone: item.tags.phone || item.tags['contact:phone'] || 'Đang cập nhật',
+            latitude: item.lat,
+            longitude: item.lon,
+          }))
+          .filter((item: any) => item.name !== 'Cơ sở y tế');
 
-          const realCenters = data.elements
-            .map((item: any) => ({
-              id: item.id,
-              name: item.tags.name || item.tags['name:en'] || 'Cơ sở y tế',
-              address: formatOSMAddress(item.tags),
-              phone: item.tags.phone || item.tags['contact:phone'] || 'Đang cập nhật',
-              latitude: item.lat,
-              longitude: item.lon,
-            }))
-            .filter((item: any) => item.name !== 'Cơ sở y tế');
-
-          if (realCenters.length === 0) {
-            setLocationError('Không tìm thấy cơ sở y tế trong 5km.');
-          } else {
-            setNearbyCenters(realCenters.slice(0, 10));
-            setLocationError(null);
-          }
-
-          success = true;
-        } catch (jsonError) {
-          console.warn(`Server ${server} trả về lỗi HTML hoặc dữ liệu hỏng.`);
-          continue;
+        if (realCenters.length === 0) {
+          setLocationError('Không tìm thấy cơ sở y tế trong 5km.');
+        } else {
+          setNearbyCenters(realCenters.slice(0, 10));
+          setLocationError(null);
         }
-      } catch (networkError) {
-        console.warn(`Lỗi kết nối tới ${server}`, networkError);
+        success = true;
+      } catch (e) {
         continue;
       }
     }
@@ -189,7 +209,6 @@ export default function SpecificResultScreen() {
     if (tags['addr:housenumber']) parts.push(tags['addr:housenumber']);
     if (tags['addr:street']) parts.push(tags['addr:street']);
     if (tags['addr:city']) parts.push(tags['addr:city']);
-
     if (parts.length === 0) {
       if (tags['addr:full']) return tags['addr:full'];
       return 'Chạm bản đồ để xem vị trí';
@@ -254,24 +273,35 @@ export default function SpecificResultScreen() {
   };
 
   const renderFormattedAdvice = () => {
-    if (!analysis.description) return null;
-    const advicePoints = analysis.description
-      .split('\n')
-      .filter((text: string) => text.trim().length > 0);
     return (
       <View style={{ marginTop: 5 }}>
-        {advicePoints.map((point: string, index: number) => (
-          <View
-            key={index}
-            style={[
-              styles.adviceItemCard,
-              { backgroundColor: isDark ? '#374151' : '#FFFFFF', borderColor: colors.border },
-            ]}
-          >
-            <Ionicons name="checkmark-circle" size={20} color="#10B981" style={{ marginTop: 2 }} />
-            <Text style={[styles.adviceItemText, { color: colors.text }]}>{point.trim()}</Text>
-          </View>
-        ))}
+        {}
+        {analysis.details && (
+          <Text style={{ color: colors.text, marginBottom: 15, lineHeight: 22, fontSize: 15 }}>
+            {analysis.details}
+          </Text>
+        )}
+
+        {}
+        {analysis.advice &&
+          Array.isArray(analysis.advice) &&
+          analysis.advice.map((point: string, index: number) => (
+            <View
+              key={index}
+              style={[
+                styles.adviceItemCard,
+                { backgroundColor: isDark ? '#374151' : '#FFFFFF', borderColor: colors.border },
+              ]}
+            >
+              <Ionicons
+                name="checkmark-circle"
+                size={20}
+                color="#10B981"
+                style={{ marginTop: 2 }}
+              />
+              <Text style={[styles.adviceItemText, { color: colors.text }]}>{point}</Text>
+            </View>
+          ))}
       </View>
     );
   };
@@ -350,9 +380,7 @@ export default function SpecificResultScreen() {
           <Text style={[styles.scoreText, { color: analysis.color }]}>{analysis.level}</Text>
           <Text style={[styles.scoreNum, { color: colors.text }]}>Điểm số: {score}/30</Text>
 
-          <Text style={[styles.resultDesc, { color: colors.text, fontWeight: '500' }]}>
-            Dưới đây là lời khuyên chi tiết dành cho bạn:
-          </Text>
+          {}
 
           {!fromHistory && (
             <View style={{ marginBottom: 15 }}>

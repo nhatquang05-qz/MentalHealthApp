@@ -45,7 +45,9 @@ export default function DailyCheckInScreen() {
 
   const handleNext = (optionIndex: number) => {
     const newAnswers = [...answers];
-    newAnswers[currentIndex] = optionIndex;
+
+    newAnswers[currentIndex] = 3 - optionIndex;
+
     setAnswers(newAnswers);
 
     setTimeout(() => {
@@ -53,7 +55,6 @@ export default function DailyCheckInScreen() {
         setCurrentIndex(currentIndex + 1);
       } else {
         const totalScore = newAnswers.reduce((a, b) => a + b, 0);
-
         navigation.replace('DailyResult', { score: totalScore });
       }
     }, 300);
@@ -97,20 +98,14 @@ export default function DailyCheckInScreen() {
 
             <View style={styles.optionsContainer}>
               {questions[currentIndex].options.map((option, index) => {
-                const isSelected = answers[currentIndex] === index;
-
                 return (
                   <TouchableOpacity
                     key={index}
                     style={[
                       styles.optionButton,
                       {
-                        borderColor: isSelected ? '#3995E9' : colors.border,
-                        backgroundColor: isSelected
-                          ? isDark
-                            ? '#1E3A5F'
-                            : '#E3F2FD'
-                          : 'transparent',
+                        borderColor: colors.border,
+                        backgroundColor: 'transparent',
                       },
                     ]}
                     onPress={() => handleNext(index)}
@@ -119,8 +114,8 @@ export default function DailyCheckInScreen() {
                       style={[
                         styles.optionText,
                         {
-                          color: isSelected ? '#3995E9' : colors.subText,
-                          fontWeight: isSelected ? '600' : '400',
+                          color: colors.subText,
+                          fontWeight: '400',
                         },
                       ]}
                     >
