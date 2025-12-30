@@ -13,7 +13,6 @@ import { useTheme } from '../context/ThemeContext';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { testData } from '../data/testData';
-
 import { API_URL } from '../config';
 
 const surveyCategories = [

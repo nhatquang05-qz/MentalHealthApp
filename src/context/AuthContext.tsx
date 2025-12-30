@@ -24,7 +24,7 @@ interface AuthContextType {
     password: string,
     contacts: EmergencyContact[],
   ) => Promise<void>;
-  updateUser: (user: UserProfile) => void;
+  updateUser: (user: UserProfile) => Promise<void>;
   logout: () => void;
   continueAsGuest: () => void;
 }
@@ -52,7 +52,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: data.user.id,
           name: data.user.username,
           email: data.user.email,
-          emergencyContacts: [],
+
+          emergencyContacts: data.user.emergencyContacts.map((c: any) => ({
+            name: c.name,
+            phone: c.phone,
+          })),
         });
         setIsGuest(false);
       } else {
@@ -76,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username: name, email, password }),
+        body: JSON.stringify({ username: name, email, password, contacts }),
       });
 
       const data = await response.json();
@@ -92,8 +96,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateUser = (updatedUser: UserProfile) => {
-    setUser(updatedUser);
+  const updateUser = async (updatedUser: UserProfile) => {
+    try {
+      if (!user) return;
+
+      const response = await fetch(`${API_URL}/auth/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: updatedUser.id,
+          username: updatedUser.name,
+          contacts: updatedUser.emergencyContacts,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser({
+          id: data.user.id,
+          name: data.user.username,
+          email: data.user.email,
+          emergencyContacts: data.user.emergencyContacts.map((c: any) => ({
+            name: c.name,
+            phone: c.phone,
+          })),
+        });
+      } else {
+        Alert.alert('Lỗi', data.message || 'Không thể cập nhật hồ sơ.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Lỗi', 'Không thể kết nối đến server để cập nhật.');
+    }
   };
 
   const logout = () => {
