@@ -1,4 +1,5 @@
 const { Mood, TestResult, Notification } = require('../models');
+const { Op } = require('sequelize'); 
 
 exports.saveMood = async (req, res) => {
   try {
@@ -29,6 +30,31 @@ exports.saveTestResult = async (req, res) => {
   try {
     const { userId, testType, score, result, details } = req.body;
     
+    
+    if (testType === 'Daily Check-In') {
+      const today = new Date();
+      
+      today.setHours(0, 0, 0, 0);
+      
+      const tomorrow = new Date(today);
+      
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      
+      await TestResult.destroy({
+        where: {
+          userId,
+          testType: 'Daily Check-In',
+          createdAt: {
+            [Op.gte]: today,    
+            [Op.lt]: tomorrow   
+          }
+        }
+      });
+      console.log(`Đã dọn dẹp Daily Check-In cũ (nếu có) cho user ${userId} ngày ${today.toISOString().split('T')[0]}`);
+    }
+    
+
     const detailsString = Array.isArray(details) ? JSON.stringify(details) : details;
 
     const newTest = await TestResult.create({ 

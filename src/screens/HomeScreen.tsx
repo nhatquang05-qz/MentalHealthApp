@@ -6,37 +6,32 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  Dimensions,
   SafeAreaView,
   Alert,
   RefreshControl,
 } from 'react-native';
-import { LineChart } from 'react-native-gifted-charts';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import MoodChart from '../components/MoodChart';
 
 import { API_URL } from '../config';
 
-const screenWidth = Dimensions.get('window').width;
+const emotionIcons = {
+  funny: require('../../assets/images/funny.png'),
+  happy: require('../../assets/images/happy.png'),
+  normal: require('../../assets/images/normal.png'),
+  sad: require('../../assets/images/sad.png'),
+  cry: require('../../assets/images/cry.png'),
+};
 
 const emotions = [
-  { name: 'Funny', img: require('../../assets/images/funny.png'), value: 5 },
-  { name: 'Happy', img: require('../../assets/images/happy.png'), value: 4 },
-  { name: 'Normal', img: require('../../assets/images/normal.png'), value: 3 },
-  { name: 'Sad', img: require('../../assets/images/sad.png'), value: 2 },
-  { name: 'Cry', img: require('../../assets/images/cry.png'), value: 1 },
-];
-
-const chartData = [
-  { value: 4, label: '2' },
-  { value: 3, label: '3' },
-  { value: 2, label: '4' },
-  { value: 5, label: '5' },
-  { value: 3, label: '6' },
-  { value: 2, label: '7' },
-  { value: 5, label: 'CN' },
+  { name: 'Funny', img: emotionIcons.funny, value: 5 },
+  { name: 'Happy', img: emotionIcons.happy, value: 4 },
+  { name: 'Normal', img: emotionIcons.normal, value: 3 },
+  { name: 'Sad', img: emotionIcons.sad, value: 2 },
+  { name: 'Cry', img: emotionIcons.cry, value: 1 },
 ];
 
 export default function HomeScreen() {
@@ -48,7 +43,7 @@ export default function HomeScreen() {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-
+  const [chartData, setChartData] = useState<any[]>([{ value: 0, label: '' }]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useFocusEffect(
@@ -60,6 +55,7 @@ export default function HomeScreen() {
         setHasCheckedInToday(false);
         setCurrentStreak(0);
         setUnreadCount(0);
+        setChartData([{ value: 0, label: '' }]);
       }
     }, [user]),
   );
@@ -78,6 +74,35 @@ export default function HomeScreen() {
     }
   };
 
+  const getEmotionImagePoint = (score: number) => {
+    let imgSource;
+
+    if (score <= 3) imgSource = emotionIcons.funny;
+    else if (score <= 6) imgSource = emotionIcons.happy;
+    else if (score <= 9) imgSource = emotionIcons.normal;
+    else if (score <= 12) imgSource = emotionIcons.sad;
+    else imgSource = emotionIcons.cry;
+
+    return (
+      <View
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          backgroundColor: '#fff',
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          elevation: 2,
+        }}
+      >
+        <Image source={imgSource} style={{ width: 20, height: 20, resizeMode: 'contain' }} />
+      </View>
+    );
+  };
+
   const checkStatusAndStreak = async () => {
     try {
       const response = await fetch(`${API_URL}/data/test-result/${(user as any).id}`);
@@ -87,25 +112,38 @@ export default function HomeScreen() {
 
       const dailyCheckIns = data.filter((item: any) => item.testType === 'Daily Check-In');
 
-      const checkInDates = new Set(dailyCheckIns.map((item: any) => item.createdAt.split('T')[0]));
+      const sortedCheckIns = dailyCheckIns.sort(
+        (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
 
-      const today = new Date().toISOString().split('T')[0];
-      if (checkInDates.has(today)) {
-        setHasCheckedInToday(true);
+      const recentCheckIns = sortedCheckIns.slice(-7);
+
+      if (recentCheckIns.length > 0) {
+        const newChartData = recentCheckIns.map((item: any) => {
+          const date = new Date(item.createdAt);
+          const label = `${date.getDate()}/${date.getMonth() + 1}`;
+          return {
+            value: item.score,
+            label,
+
+            customDataPoint: () => getEmotionImagePoint(item.score),
+          };
+        });
+        setChartData(newChartData);
       } else {
-        setHasCheckedInToday(false);
+        setChartData([{ value: 0, label: 'Chưa có' }]);
       }
+
+      const checkInDates = new Set(dailyCheckIns.map((item: any) => item.createdAt.split('T')[0]));
+      const today = new Date().toISOString().split('T')[0];
+      setHasCheckedInToday(checkInDates.has(today));
 
       let streak = 0;
       let checkDate = new Date();
-
       const todayStr = checkDate.toISOString().split('T')[0];
-      if (checkInDates.has(todayStr)) {
-        streak++;
-      }
+      if (checkInDates.has(todayStr)) streak++;
 
       checkDate.setDate(checkDate.getDate() - 1);
-
       while (true) {
         const dateStr = checkDate.toISOString().split('T')[0];
         if (checkInDates.has(dateStr)) {
@@ -115,16 +153,14 @@ export default function HomeScreen() {
           break;
         }
       }
-
       setCurrentStreak(streak);
     } catch (error) {
-      console.error('Lỗi khi tải dữ liệu từ API:', error);
+      console.error('Lỗi API:', error);
     }
   };
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-
     Promise.all([checkStatusAndStreak(), fetchUnreadCount()]).finally(() => setRefreshing(false));
   }, []);
 
@@ -160,19 +196,16 @@ export default function HomeScreen() {
           />
         }
       >
-        {}
         <View style={styles.header}>
           <View style={styles.soulCareLogo}>
             <Text style={styles.soulCareText}>SoulCare</Text>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            {}
             <TouchableOpacity style={styles.sosButton} onPress={() => navigation.navigate('SOS')}>
               <Text style={{ fontWeight: '900', color: '#fff', fontSize: 12 }}>SOS</Text>
             </TouchableOpacity>
 
-            {}
             <View
               style={[styles.streakContainer, { backgroundColor: isDark ? '#333' : '#FFF0E6' }]}
             >
@@ -180,7 +213,6 @@ export default function HomeScreen() {
               <Text style={[styles.streakText, { color: '#FF6B6B' }]}>{currentStreak}</Text>
             </View>
 
-            {}
             <TouchableOpacity
               style={styles.notificationButton}
               onPress={() => navigation.navigate('Notifications')}
@@ -195,7 +227,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View
             style={{
@@ -274,38 +305,10 @@ export default function HomeScreen() {
         {}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.cardTitle, { color: colors.text }]}>Biểu đồ tâm trạng</Text>
-          <Text style={[styles.cardSubtitle, { color: colors.subText }]}>Tuần trước</Text>
-          <View style={styles.chartContainer}>
-            <LineChart
-              data={chartData}
-              height={220}
-              isAnimated
-              curved
-              color1={colors.primary}
-              dataPointsColor1={colors.primary}
-              startFillColor1={colors.primary}
-              endFillColor1={colors.card}
-              startOpacity={1}
-              endOpacity={1}
-              maxValue={5}
-              noOfSections={5}
-              yAxisLabelContainerStyle={{ width: 30 }}
-              yAxisLabelSuffix=""
-              yAxisTextStyle={{ color: colors.subText, fontSize: 12 }}
-              xAxisLabelTextStyle={{ color: colors.subText, fontSize: 12 }}
-              dataPointsRadius={5}
-              dataPointsHeight={5}
-              dataPointsWidth={5}
-              rulesType="solid"
-              rulesColor={colors.border}
-              xAxisColor={colors.border}
-              yAxisColor={colors.border}
-              hideYAxisText={false}
-            />
-          </View>
+          <Text style={[styles.cardSubtitle, { color: colors.subText }]}>7 ngày gần nhất</Text>
+          <MoodChart data={chartData} colors={colors} />
         </View>
 
-        {}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Tiện ích</Text>
 
         <View style={{ flexDirection: 'row', gap: 15, flexWrap: 'wrap' }}>
@@ -353,7 +356,6 @@ export default function HomeScreen() {
             <Text style={{ fontSize: 12, color: colors.subText }}>Lời khuyên mỗi ngày</Text>
           </TouchableOpacity>
 
-          {}
           <TouchableOpacity
             style={[
               styles.shortcutCard,
@@ -588,8 +590,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 5,
   },
-
-  chartContainer: { paddingLeft: 0, paddingTop: 10, marginLeft: -10 },
 
   sectionTitle: {
     fontSize: 18,
