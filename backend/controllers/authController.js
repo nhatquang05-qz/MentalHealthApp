@@ -3,9 +3,11 @@ const EmergencyContact = require('../models/EmergencyContact');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+
+
+
 exports.register = async (req, res) => {
   try {
-    
     const { username, email, password, contacts } = req.body; 
 
     const existingUser = await User.findOne({ where: { email } });
@@ -16,14 +18,12 @@ exports.register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    
     const newUser = await User.create({
       username,
       email,
       password: hashedPassword
     });
 
-    
     if (contacts && contacts.length > 0) {
       const contactData = contacts.map(c => ({
         userId: newUser.id,
@@ -44,7 +44,6 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    
     const user = await User.findOne({ 
       where: { email },
       include: [{ model: EmergencyContact, as: 'emergencyContacts' }] 
@@ -72,6 +71,7 @@ exports.login = async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
+        avatar: user.avatar, 
         emergencyContacts: user.emergencyContacts || [] 
       }
     });
@@ -81,20 +81,40 @@ exports.login = async (req, res) => {
   }
 };
 
-
 exports.updateProfile = async (req, res) => {
   try {
+    
     const { id, username, contacts } = req.body; 
+    let avatarUrl;
+
     
+    if (req.file) {
+      
+      avatarUrl = req.file.path; 
+    }
     
-    await User.update({ username }, { where: { id } });
+    const updateData = {};
+    if (username) updateData.username = username;
+    if (avatarUrl) updateData.avatar = avatarUrl; 
+
+    await User.update(updateData, { where: { id } });
 
     
     if (contacts) {
       await EmergencyContact.destroy({ where: { userId: id } });
       
-      if (contacts.length > 0) {
-        const contactData = contacts.map(c => ({
+      let parsedContacts = contacts;
+      if (typeof contacts === 'string') {
+        try {
+          parsedContacts = JSON.parse(contacts);
+        } catch (e) {
+          console.log('Contacts parse error, assuming empty or raw format');
+          parsedContacts = [];
+        }
+      }
+
+      if (Array.isArray(parsedContacts) && parsedContacts.length > 0) {
+        const contactData = parsedContacts.map(c => ({
           userId: id,
           name: c.name,
           phone: c.phone
@@ -102,7 +122,7 @@ exports.updateProfile = async (req, res) => {
         await EmergencyContact.bulkCreate(contactData);
       }
     }
-
+    
     
     const updatedUser = await User.findOne({ 
       where: { id },
@@ -115,12 +135,13 @@ exports.updateProfile = async (req, res) => {
         id: updatedUser.id,
         username: updatedUser.username,
         email: updatedUser.email,
+        avatar: updatedUser.avatar, 
         emergencyContacts: updatedUser.emergencyContacts || []
       }
     });
 
   } catch (error) {
-    console.error(error);
+    console.error('Update profile error:', error);
     res.status(500).json({ message: 'Lỗi server khi cập nhật hồ sơ.' });
   }
 };

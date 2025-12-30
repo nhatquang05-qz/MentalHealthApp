@@ -8,31 +8,24 @@ import {
   SafeAreaView,
   Switch,
   Modal,
-  TextInput,
   Alert,
-  KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '../context/ThemeContext';
 
-import { useAuth, EmergencyContact } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
 
-  const { isGuest, user, logout, updateUser } = useAuth();
+  const { isGuest, user, logout } = useAuth();
   const navigation = useNavigation<any>();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-
-  const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [tempName, setTempName] = useState('');
-  const [tempEmail, setTempEmail] = useState('');
-
-  const [tempContacts, setTempContacts] = useState<EmergencyContact[]>([]);
 
   const [reminderTime, setReminderTime] = useState('20:00');
   const [date, setDate] = useState(new Date());
@@ -43,12 +36,6 @@ export default function SettingsScreen() {
   const frequencyOptions = ['Hàng ngày', 'Mỗi 2 ngày', 'Mỗi 3 ngày', 'Hàng tuần', 'Cuối tuần'];
 
   useEffect(() => {
-    if (user) {
-      setTempName(user.name);
-      setTempEmail(user.email);
-
-      setTempContacts(user.emergencyContacts || []);
-    }
     const now = new Date();
     now.setHours(20);
     now.setMinutes(0);
@@ -57,41 +44,6 @@ export default function SettingsScreen() {
 
   const handleToggleNotification = () => {
     setNotificationsEnabled(!notificationsEnabled);
-  };
-
-  const handleContactChange = (index: number, field: keyof EmergencyContact, value: string) => {
-    const newContacts = [...tempContacts];
-    newContacts[index][field] = value;
-    setTempContacts(newContacts);
-  };
-
-  const addContactRow = () => {
-    setTempContacts([...tempContacts, { name: '', phone: '' }]);
-  };
-
-  const removeContactRow = (index: number) => {
-    const newContacts = tempContacts.filter((_, i) => i !== index);
-    setTempContacts(newContacts);
-  };
-
-  const saveProfile = () => {
-    if (user && updateUser) {
-      const validContacts = tempContacts.filter(
-        (c) => c.name.trim() !== '' && c.phone.trim() !== '',
-      );
-
-      updateUser({
-        ...user,
-        name: tempName,
-        emergencyContacts: validContacts,
-      });
-
-      setEditModalVisible(false);
-      Alert.alert('Thành công', 'Hồ sơ và danh bạ SOS đã được cập nhật!');
-    } else {
-      setEditModalVisible(false);
-      Alert.alert('Thông báo', 'Hồ sơ đã lưu (Vui lòng kiểm tra lại AuthContext để lưu SOS)');
-    }
   };
 
   const handleLogout = () => {
@@ -161,17 +113,25 @@ export default function SettingsScreen() {
     return (
       <View style={[styles.card, { backgroundColor: colors.card }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-          <View style={[styles.avatar, { backgroundColor: isDark ? '#333' : '#F3F4F6' }]}>
-            <Text style={{ fontSize: 24 }}>👤</Text>
-          </View>
+          {}
+          {user?.avatar ? (
+            <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
+          ) : (
+            <View style={[styles.avatar, { backgroundColor: isDark ? '#333' : '#F3F4F6' }]}>
+              <Text style={{ fontSize: 24 }}>👤</Text>
+            </View>
+          )}
+
           <View style={{ marginLeft: 16, flex: 1 }}>
             <Text style={[styles.userName, { color: colors.text }]}>{user?.name}</Text>
             <Text style={[styles.userEmail, { color: colors.subText }]}>{user?.email}</Text>
           </View>
         </View>
+
+        {}
         <TouchableOpacity
           style={[styles.editButton, { borderColor: colors.primary }]}
-          onPress={() => setEditModalVisible(true)}
+          onPress={() => navigation.navigate('Profile')}
         >
           <Text style={[styles.editButtonText, { color: colors.primary }]}>Chỉnh Sửa Hồ Sơ</Text>
         </TouchableOpacity>
@@ -298,162 +258,6 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
-
-      {}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isEditModalVisible}
-        onRequestClose={() => setEditModalVisible(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.modalOverlay}
-        >
-          <View style={[styles.modalContent, { backgroundColor: colors.card, maxHeight: '85%' }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Chỉnh Sửa Hồ Sơ</Text>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: colors.subText }]}>Họ và tên</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.inputBg, color: colors.text }]}
-                  value={tempName}
-                  onChangeText={setTempName}
-                  placeholderTextColor={colors.subText}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: colors.subText }]}>Email</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: colors.inputBg, color: colors.text }]}
-                  value={tempEmail}
-                  onChangeText={setTempEmail}
-                  keyboardType="email-address"
-                  editable={false}
-                  placeholderTextColor={colors.subText}
-                />
-              </View>
-
-              {}
-              <View style={{ marginTop: 10, marginBottom: 20 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 10,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Ionicons
-                      name="call"
-                      size={18}
-                      color={colors.danger}
-                      style={{ marginRight: 6 }}
-                    />
-                    <Text
-                      style={{
-                        fontWeight: 'bold',
-                        color: colors.text,
-                        fontSize: 16,
-                      }}
-                    >
-                      Danh bạ SOS
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={addContactRow}>
-                    <Text style={{ color: colors.primary, fontWeight: 'bold' }}>+ Thêm số</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {tempContacts.length === 0 && (
-                  <Text
-                    style={{
-                      color: colors.subText,
-                      fontStyle: 'italic',
-                      fontSize: 13,
-                      marginBottom: 10,
-                    }}
-                  >
-                    Chưa có số liên hệ khẩn cấp nào.
-                  </Text>
-                )}
-
-                {tempContacts.map((contact, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: 'row',
-                      gap: 8,
-                      marginBottom: 10,
-                      alignItems: 'center',
-                    }}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <TextInput
-                        style={[
-                          styles.input,
-                          {
-                            backgroundColor: colors.inputBg,
-                            color: colors.text,
-                            height: 40,
-                            marginBottom: 5,
-                            fontSize: 14,
-                          },
-                        ]}
-                        value={contact.name}
-                        placeholder="Tên (VD: Mẹ)"
-                        placeholderTextColor={colors.subText}
-                        onChangeText={(t) => handleContactChange(index, 'name', t)}
-                      />
-                      <TextInput
-                        style={[
-                          styles.input,
-                          {
-                            backgroundColor: colors.inputBg,
-                            color: colors.text,
-                            height: 40,
-                            fontSize: 14,
-                          },
-                        ]}
-                        value={contact.phone}
-                        placeholder="Số điện thoại"
-                        placeholderTextColor={colors.subText}
-                        onChangeText={(t) => handleContactChange(index, 'phone', t)}
-                        keyboardType="phone-pad"
-                      />
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => removeContactRow(index)}
-                      style={{ padding: 5 }}
-                    >
-                      <Ionicons name="trash-outline" size={22} color={colors.danger} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalBtn, { backgroundColor: colors.inputBg }]}
-                onPress={() => setEditModalVisible(false)}
-              >
-                <Text style={{ color: colors.text }}>Hủy</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalBtn, { backgroundColor: colors.primary }]}
-                onPress={saveProfile}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Lưu Thay Đổi</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
 
       {}
       <Modal
@@ -596,6 +400,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+  },
   userName: { fontSize: 18, fontWeight: 'bold' },
   userEmail: { fontSize: 14 },
   editButton: { borderWidth: 1, padding: 10, borderRadius: 12, alignItems: 'center' },
@@ -663,18 +472,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  inputGroup: { marginBottom: 15 },
-  inputLabel: { marginBottom: 6, fontSize: 14 },
-  input: { height: 50, borderRadius: 12, paddingHorizontal: 15, fontSize: 16 },
-  modalButtons: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  modalBtn: {
-    flex: 0.48,
-    height: 50,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
   frequencyOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',

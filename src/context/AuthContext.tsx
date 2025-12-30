@@ -11,6 +11,7 @@ interface UserProfile {
   id: number;
   name: string;
   email: string;
+  avatar?: string;
   emergencyContacts: EmergencyContact[];
 }
 
@@ -24,7 +25,7 @@ interface AuthContextType {
     password: string,
     contacts: EmergencyContact[],
   ) => Promise<void>;
-  updateUser: (user: UserProfile) => Promise<void>;
+  updateUser: (formData: FormData) => Promise<boolean>;
   logout: () => void;
   continueAsGuest: () => void;
 }
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: data.user.id,
           name: data.user.username,
           email: data.user.email,
-
+          avatar: data.user.avatar,
           emergencyContacts: data.user.emergencyContacts.map((c: any) => ({
             name: c.name,
             phone: c.phone,
@@ -96,20 +97,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateUser = async (updatedUser: UserProfile) => {
+  const updateUser = async (formData: FormData) => {
     try {
-      if (!user) return;
+      if (!user) return false;
 
       const response = await fetch(`${API_URL}/auth/update`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: updatedUser.id,
-          username: updatedUser.name,
-          contacts: updatedUser.emergencyContacts,
-        }),
+        body: formData,
       });
 
       const data = await response.json();
@@ -119,17 +113,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           id: data.user.id,
           name: data.user.username,
           email: data.user.email,
+          avatar: data.user.avatar,
           emergencyContacts: data.user.emergencyContacts.map((c: any) => ({
             name: c.name,
             phone: c.phone,
           })),
         });
+        return true;
       } else {
         Alert.alert('Lỗi', data.message || 'Không thể cập nhật hồ sơ.');
+        return false;
       }
     } catch (error) {
       console.error(error);
       Alert.alert('Lỗi', 'Không thể kết nối đến server để cập nhật.');
+      return false;
     }
   };
 
