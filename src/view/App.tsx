@@ -11,11 +11,7 @@ export default function App() {
       <AuthProvider>
         <NavigationContainer>
           <AppNavigator />
-          <StatusBar
-            barStyle="default"
-            backgroundColor="transparent"
-            translucent={true}
-          />
+          <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
         </NavigationContainer>
       </AuthProvider>
     </ThemeProvider>

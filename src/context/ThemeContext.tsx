@@ -3,12 +3,12 @@ import React, { createContext, useState, useContext, ReactNode } from 'react';
 export const themeColors = {
   light: {
     background: '#f4f7ff',
-    card: '#ffffff',       
-    text: '#1a1a1a',       
-    subText: '#8e8e93',    
-    primary: '#3995E9',    
+    card: '#ffffff',
+    text: '#1a1a1a',
+    subText: '#8e8e93',
+    primary: '#3995E9',
     border: '#f0f0f0',
-    iconBg: '#E3F2FD',     
+    iconBg: '#E3F2FD',
     danger: '#FF3B30',
     success: '#34C759',
     inputBg: '#F3F4F6',

@@ -1,5 +1,13 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
@@ -9,50 +17,42 @@ export default function DailyResultScreen() {
   const { colors, isDark } = useTheme();
   const navigation = useNavigation<any>();
 
-  // Hàm xử lý lưu kết quả
   const saveDailyResult = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0]; // Lấy ngày YYYY-MM-DD
-      
-      // Dữ liệu kết quả mẫu (Trong thực tế bạn có thể truyền từ màn hình trước sang)
+      const today = new Date().toISOString().split('T')[0];
+
       const resultData = {
         date: today,
-        mood: 'happy', // Giả sử kết quả là Tốt/Vui vẻ
+        mood: 'happy',
         score: 85,
-        note: 'Đã hoàn thành khảo sát hàng ngày'
+        note: 'Đã hoàn thành khảo sát hàng ngày',
       };
 
-      // 1. Lấy dữ liệu lịch sử cũ từ bộ nhớ
       const existingDataJson = await AsyncStorage.getItem('mood_history');
       let existingData = existingDataJson ? JSON.parse(existingDataJson) : {};
 
-      // 2. Thêm/Cập nhật dữ liệu ngày hôm nay
-      // Cấu trúc này tuân theo thư viện react-native-calendars
       existingData[today] = {
         marked: true,
         customStyles: {
           container: {
-            backgroundColor: '#4CAF50', // Màu xanh lá (Happy)
+            backgroundColor: '#4CAF50',
             borderRadius: 8,
           },
           text: {
             color: 'white',
             fontWeight: 'bold',
-          }
+          },
         },
-        data: resultData // Lưu thông tin chi tiết để hiển thị sau này
+        data: resultData,
       };
 
-      // 3. Lưu ngược lại vào bộ nhớ
       await AsyncStorage.setItem('mood_history', JSON.stringify(existingData));
-      
-      // 4. Thông báo và chuyển trang
-      Alert.alert("Thành công", "Kết quả đã được lưu vào lịch trình của bạn!");
+
+      Alert.alert('Thành công', 'Kết quả đã được lưu vào lịch trình của bạn!');
       navigation.navigate('MainTabs');
-      
     } catch (error) {
       console.error(error);
-      Alert.alert("Lỗi", "Không thể lưu kết quả lúc này.");
+      Alert.alert('Lỗi', 'Không thể lưu kết quả lúc này.');
     }
   };
 
@@ -71,28 +71,31 @@ export default function DailyResultScreen() {
           <View style={styles.iconContainer}>
             <Ionicons name="sparkles" size={40} color="#FFD700" />
           </View>
-          
+
           <Text style={[styles.congratsText, { color: colors.text }]}>
             Bạn đã hoàn thành khảo sát hằng ngày
           </Text>
-          
+
           <Text style={[styles.resultDesc, { color: colors.subText }]}>
-            Mức độ căng thẳng của bạn ở mức trung bình{"\n"}— hãy thử nghỉ ngơi ngắn và các bài tập thở sâu.
+            Mức độ căng thẳng của bạn ở mức trung bình{'\n'}— hãy thử nghỉ ngơi ngắn và các bài tập
+            thở sâu.
           </Text>
 
-          {/* Cập nhật onPress để gọi hàm lưu */}
-          <TouchableOpacity 
-            style={[styles.primaryButton, { backgroundColor: '#3995E9' }]} 
+          {}
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: '#3995E9' }]}
             onPress={saveDailyResult}
           >
             <Text style={styles.primaryButtonText}>Lưu kết quả</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.secondaryButton, { borderColor: colors.border }]} 
+          <TouchableOpacity
+            style={[styles.secondaryButton, { borderColor: colors.border }]}
             onPress={() => navigation.navigate('DailyCheckIn')}
           >
-            <Text style={[styles.secondaryButtonText, { color: colors.text }]}>Làm lại khảo sát</Text>
+            <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
+              Làm lại khảo sát
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -100,7 +103,7 @@ export default function DailyResultScreen() {
 
         <View style={[styles.recommendItem, { backgroundColor: isDark ? '#1E1E1E' : '#F0F0F0' }]}>
           <View style={[styles.recommendIcon, { backgroundColor: '#FFD1DC' }]}>
-             <Ionicons name="body" size={24} color="#FF6B6B" />
+            <Ionicons name="body" size={24} color="#FF6B6B" />
           </View>
           <View style={styles.recommendContent}>
             <Text style={[styles.recommendName, { color: colors.text }]}>Bài tập thở</Text>
@@ -110,7 +113,7 @@ export default function DailyResultScreen() {
 
         <View style={[styles.recommendItem, { backgroundColor: isDark ? '#1E1E1E' : '#F0F0F0' }]}>
           <View style={[styles.recommendIcon, { backgroundColor: '#E3F2FD' }]}>
-             <Ionicons name="musical-notes" size={24} color="#3995E9" />
+            <Ionicons name="musical-notes" size={24} color="#3995E9" />
           </View>
           <View style={styles.recommendContent}>
             <Text style={[styles.recommendName, { color: colors.text }]}>Nhạc thư giãn</Text>
@@ -124,7 +127,14 @@ export default function DailyResultScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
   backButton: { padding: 5 },
   headerTitle: { fontSize: 18, fontWeight: 'bold' },
   scrollContent: { padding: 20 },
@@ -137,19 +147,44 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
     alignItems: 'center',
-    marginBottom: 30
+    marginBottom: 30,
   },
   iconContainer: { marginBottom: 20 },
   congratsText: { fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 12 },
   resultDesc: { fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 30 },
-  primaryButton: { width: '100%', paddingVertical: 16, borderRadius: 30, alignItems: 'center', marginBottom: 12 },
+  primaryButton: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 30,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   primaryButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  secondaryButton: { width: '100%', paddingVertical: 16, borderRadius: 30, alignItems: 'center', borderWidth: 1 },
+  secondaryButton: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 30,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
   secondaryButtonText: { fontSize: 16, fontWeight: '600' },
   recommendTitle: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
-  recommendItem: { flexDirection: 'row', padding: 16, borderRadius: 20, marginBottom: 12, alignItems: 'center' },
-  recommendIcon: { width: 48, height: 48, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  recommendItem: {
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  recommendIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
   recommendContent: { flex: 1 },
   recommendName: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  recommendTime: { fontSize: 14 }
+  recommendTime: { fontSize: 14 },
 });

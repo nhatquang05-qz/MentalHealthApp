@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Share, Alert, Dimensions } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  SafeAreaView,
+  Share,
+  Alert,
+  Dimensions,
+} from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'; // <--- Thêm import này
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
@@ -8,16 +17,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 const { width, height } = Dimensions.get('window');
 
 const quotes = [
-  "Bạn không cần phải hoàn hảo để trở nên tuyệt vời.",
-  "Mỗi ngày mới là một cơ hội để bắt đầu lại.",
-  "Hãy đối xử nhẹ nhàng với chính mình, bạn đang làm tốt nhất có thể rồi.",
-  "Bão tố giúp cây cối bám rễ sâu hơn.",
-  "Hạnh phúc không phải là đích đến, mà là hành trình.",
-  "Cảm xúc của bạn là hợp lệ, hãy cho phép mình cảm nhận chúng.",
-  "Bạn mạnh mẽ hơn những gì bạn nghĩ rất nhiều.",
-  "Nghỉ ngơi không phải là từ bỏ, mà là nạp năng lượng.",
-  "Chỉ cần bước đi, con đường sẽ tự mở ra.",
-  "Đừng để ngày hôm qua chiếm quá nhiều thời gian của ngày hôm nay."
+  'Bạn không cần phải hoàn hảo để trở nên tuyệt vời.',
+  'Mỗi ngày mới là một cơ hội để bắt đầu lại.',
+  'Hãy đối xử nhẹ nhàng với chính mình, bạn đang làm tốt nhất có thể rồi.',
+  'Bão tố giúp cây cối bám rễ sâu hơn.',
+  'Hạnh phúc không phải là đích đến, mà là hành trình.',
+  'Cảm xúc của bạn là hợp lệ, hãy cho phép mình cảm nhận chúng.',
+  'Bạn mạnh mẽ hơn những gì bạn nghĩ rất nhiều.',
+  'Nghỉ ngơi không phải là từ bỏ, mà là nạp năng lượng.',
+  'Chỉ cần bước đi, con đường sẽ tự mở ra.',
+  'Đừng để ngày hôm qua chiếm quá nhiều thời gian của ngày hôm nay.',
 ];
 
 export default function QuoteScreen() {
@@ -40,22 +49,19 @@ export default function QuoteScreen() {
     }
   };
 
-  const gradientColors = isDark 
-    ? ['#2C3E50', '#000000'] as const
-    : ['#E0C3FC', '#8EC5FC'] as const;
+  const gradientColors = isDark
+    ? (['#2C3E50', '#000000'] as const)
+    : (['#E0C3FC', '#8EC5FC'] as const);
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={gradientColors}
-        style={styles.background}
-      />
+      <LinearGradient colors={gradientColors} style={styles.background} />
 
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()} 
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
             style={[styles.iconButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
           >
             <Ionicons name="close" size={24} color="#fff" />
@@ -67,30 +73,30 @@ export default function QuoteScreen() {
         {/* Nội dung chính */}
         <View style={styles.contentContainer}>
           {/* Icon nền mờ (Đã sửa tên icon) */}
-          <MaterialCommunityIcons 
-            name="format-quote-open" 
-            size={120} 
-            color="rgba(255,255,255,0.1)" 
-            style={styles.bgIcon} 
+          <MaterialCommunityIcons
+            name="format-quote-open"
+            size={120}
+            color="rgba(255,255,255,0.1)"
+            style={styles.bgIcon}
           />
-          
+
           <View style={styles.quoteBox}>
             {/* Dấu mở ngoặc */}
-            <MaterialCommunityIcons 
-              name="format-quote-open" 
-              size={40} 
-              color="#fff" 
-              style={{ marginBottom: 10, alignSelf: 'flex-start', opacity: 0.8 }} 
+            <MaterialCommunityIcons
+              name="format-quote-open"
+              size={40}
+              color="#fff"
+              style={{ marginBottom: 10, alignSelf: 'flex-start', opacity: 0.8 }}
             />
-            
+
             <Text style={styles.quoteText}>{currentQuote}</Text>
-            
+
             {/* Dấu đóng ngoặc */}
-            <MaterialCommunityIcons 
-              name="format-quote-close" 
-              size={40} 
-              color="#fff" 
-              style={{ marginTop: 10, alignSelf: 'flex-end', opacity: 0.8 }} 
+            <MaterialCommunityIcons
+              name="format-quote-close"
+              size={40}
+              color="#fff"
+              style={{ marginTop: 10, alignSelf: 'flex-end', opacity: 0.8 }}
             />
           </View>
         </View>
@@ -102,9 +108,17 @@ export default function QuoteScreen() {
             <Text style={styles.actionText}>Chia sẻ</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, styles.primaryBtn]} onPress={handleNewQuote}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.primaryBtn]}
+            onPress={handleNewQuote}
+          >
             <Ionicons name="sparkles" size={24} color={isDark ? '#fff' : colors.primary} />
-            <Text style={[styles.actionText, { color: isDark ? '#fff' : colors.primary, fontWeight: 'bold' }]}>
+            <Text
+              style={[
+                styles.actionText,
+                { color: isDark ? '#fff' : colors.primary, fontWeight: 'bold' },
+              ]}
+            >
               Thông điệp khác
             </Text>
           </TouchableOpacity>
@@ -144,7 +158,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
+
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -201,5 +215,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
-  }
+  },
 });

@@ -11,7 +11,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Image // Import Image component
+  Image, // Import Image component
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -61,7 +61,10 @@ export default function GratitudeScreen() {
     // Yêu cầu quyền truy cập (quan trọng cho iOS)
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Cần quyền truy cập', 'Vui lòng cấp quyền truy cập thư viện ảnh để sử dụng tính năng này.');
+      Alert.alert(
+        'Cần quyền truy cập',
+        'Vui lòng cấp quyền truy cập thư viện ảnh để sử dụng tính năng này.',
+      );
       return;
     }
 
@@ -80,8 +83,8 @@ export default function GratitudeScreen() {
   const handleAdd = () => {
     // Cho phép đăng nếu có chữ HOẶC có ảnh
     if (!text.trim() && !selectedImage) {
-        Alert.alert("Chưa có nội dung", "Hãy viết điều gì đó hoặc chọn một bức ảnh.");
-        return;
+      Alert.alert('Chưa có nội dung', 'Hãy viết điều gì đó hoặc chọn một bức ảnh.');
+      return;
     }
 
     const newItem: GratitudeItem = {
@@ -94,7 +97,7 @@ export default function GratitudeScreen() {
     const updatedItems = [newItem, ...items];
     setItems(updatedItems);
     saveGratitude(updatedItems);
-    
+
     // Reset form
     setText('');
     setSelectedImage(null);
@@ -102,42 +105,36 @@ export default function GratitudeScreen() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert(
-        "Xóa nhật ký",
-        "Bạn có chắc muốn xóa kỷ niệm này không?",
-        [
-            { text: "Hủy", style: "cancel" },
-            { 
-                text: "Xóa", 
-                style: "destructive", 
-                onPress: () => {
-                    const updatedItems = items.filter(item => item.id !== id);
-                    setItems(updatedItems);
-                    saveGratitude(updatedItems);
-                }
-            }
-        ]
-    );
+    Alert.alert('Xóa nhật ký', 'Bạn có chắc muốn xóa kỷ niệm này không?', [
+      { text: 'Hủy', style: 'cancel' },
+      {
+        text: 'Xóa',
+        style: 'destructive',
+        onPress: () => {
+          const updatedItems = items.filter((item) => item.id !== id);
+          setItems(updatedItems);
+          saveGratitude(updatedItems);
+        },
+      },
+    ]);
   };
 
   const renderItem = ({ item }: { item: GratitudeItem }) => (
     <View style={[styles.itemCard, { backgroundColor: colors.card }]}>
       <View style={styles.itemContent}>
         <Text style={[styles.itemDate, { color: colors.subText }]}>{item.date}</Text>
-        
+
         {/* Hiển thị ảnh nếu có */}
         {item.imageUri && (
-          <Image 
-            source={{ uri: item.imageUri }} 
-            style={styles.itemImage} 
-            resizeMode="cover"
-          />
+          <Image source={{ uri: item.imageUri }} style={styles.itemImage} resizeMode="cover" />
         )}
-        
+
         {/* Hiển thị text nếu có */}
-        {item.text ? <Text style={[styles.itemText, { color: colors.text }]}>{item.text}</Text> : null}
+        {item.text ? (
+          <Text style={[styles.itemText, { color: colors.text }]}>{item.text}</Text>
+        ) : null}
       </View>
-      
+
       <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteButton}>
         <Ionicons name="trash-outline" size={20} color={colors.subText} />
       </TouchableOpacity>
@@ -155,61 +152,69 @@ export default function GratitudeScreen() {
       </View>
 
       <View style={styles.introContainer}>
-          <Text style={[styles.introText, { color: colors.subText }]}>
-              "Hạnh phúc không phải là có tất cả những gì bạn muốn, mà là trân trọng những gì bạn đang có."
-          </Text>
+        <Text style={[styles.introText, { color: colors.subText }]}>
+          "Hạnh phúc không phải là có tất cả những gì bạn muốn, mà là trân trọng những gì bạn đang
+          có."
+        </Text>
       </View>
 
       <FlatList
         data={items}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-                <Ionicons name="leaf-outline" size={60} color={colors.border} />
-                <Text style={{ color: colors.subText, marginTop: 10 }}>Chưa có nhật ký nào. Hãy viết điều đầu tiên nhé!</Text>
-            </View>
+          <View style={styles.emptyContainer}>
+            <Ionicons name="leaf-outline" size={60} color={colors.border} />
+            <Text style={{ color: colors.subText, marginTop: 10 }}>
+              Chưa có nhật ký nào. Hãy viết điều đầu tiên nhé!
+            </Text>
+          </View>
         }
       />
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
         {/* Khu vực hiển thị Preview ảnh đang chọn */}
         {selectedImage && (
-            <View style={[styles.previewContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-                <Image source={{ uri: selectedImage }} style={styles.previewImage} />
-                <TouchableOpacity 
-                    style={styles.removeImageButton}
-                    onPress={() => setSelectedImage(null)}
-                >
-                    <Ionicons name="close-circle" size={24} color="#FF3B30" />
-                </TouchableOpacity>
-            </View>
+          <View
+            style={[
+              styles.previewContainer,
+              { backgroundColor: colors.card, borderTopColor: colors.border },
+            ]}
+          >
+            <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+            <TouchableOpacity
+              style={styles.removeImageButton}
+              onPress={() => setSelectedImage(null)}
+            >
+              <Ionicons name="close-circle" size={24} color="#FF3B30" />
+            </TouchableOpacity>
+          </View>
         )}
 
         <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
-            {/* Nút chọn ảnh */}
-            <TouchableOpacity onPress={pickImage} style={styles.iconButton}>
-                <Ionicons name="image-outline" size={26} color={colors.primary} />
-            </TouchableOpacity>
+          {/* Nút chọn ảnh */}
+          <TouchableOpacity onPress={pickImage} style={styles.iconButton}>
+            <Ionicons name="image-outline" size={26} color={colors.primary} />
+          </TouchableOpacity>
 
-            <TextInput
-                style={[styles.input, { backgroundColor: colors.inputBg, color: colors.text }]}
-                placeholder="Hôm nay bạn biết ơn điều gì?"
-                placeholderTextColor={colors.subText}
-                value={text}
-                onChangeText={setText}
-            />
-            <TouchableOpacity 
-                style={[styles.addButton, { backgroundColor: colors.primary }]} 
-                onPress={handleAdd}
-            >
-                <Ionicons name="send" size={20} color="#fff" />
-            </TouchableOpacity>
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.inputBg, color: colors.text }]}
+            placeholder="Hôm nay bạn biết ơn điều gì?"
+            placeholderTextColor={colors.subText}
+            value={text}
+            onChangeText={setText}
+          />
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: colors.primary }]}
+            onPress={handleAdd}
+          >
+            <Ionicons name="send" size={20} color="#fff" />
+          </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -218,10 +223,17 @@ export default function GratitudeScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 10 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
   backButton: { padding: 5 },
   headerTitle: { fontSize: 20, fontWeight: 'bold' },
-  
+
   introContainer: { paddingHorizontal: 20, marginBottom: 10 },
   introText: { fontStyle: 'italic', textAlign: 'center', fontSize: 14 },
 
@@ -232,7 +244,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'flex-start', // Căn chỉnh lên trên để đẹp hơn khi có ảnh
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, elevation: 2
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    elevation: 2,
   },
   itemContent: { flex: 1 },
   itemDate: { fontSize: 12, marginBottom: 6 },
@@ -249,20 +264,20 @@ const styles = StyleSheet.create({
 
   // Styles cho phần Input và Preview
   previewContainer: {
-      padding: 10,
-      paddingHorizontal: 20,
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderTopWidth: 1,
-      borderTopColor: 'rgba(0,0,0,0.05)'
+    padding: 10,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
   },
   previewImage: {
-      width: 60,
-      height: 60,
-      borderRadius: 8,
+    width: 60,
+    height: 60,
+    borderRadius: 8,
   },
   removeImageButton: {
-      marginLeft: 10,
+    marginLeft: 10,
   },
 
   inputContainer: {
@@ -270,11 +285,11 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.05)',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   iconButton: {
-      padding: 8,
-      marginRight: 8,
+    padding: 8,
+    marginRight: 8,
   },
   input: {
     flex: 1,
@@ -282,7 +297,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingHorizontal: 20,
     fontSize: 16,
-    marginRight: 12
+    marginRight: 12,
   },
   addButton: {
     width: 50,
@@ -290,6 +305,9 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, elevation: 3
-  }
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    elevation: 3,
+  },
 });

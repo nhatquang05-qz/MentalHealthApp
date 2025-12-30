@@ -1,15 +1,24 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
+// Định nghĩa kiểu dữ liệu cho liên hệ khẩn cấp
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+}
+
 interface UserProfile {
   name: string;
   email: string;
+  emergencyContacts: EmergencyContact[]; // Thêm trường này
 }
 
 interface AuthContextType {
   isGuest: boolean;
   user: UserProfile | null;
   login: (email: string) => void;
-  register: (name: string, email: string) => void;
+  // Cập nhật hàm register nhận thêm contacts
+  register: (name: string, email: string, contacts: EmergencyContact[]) => void;
+  updateUser: (user: UserProfile) => void; // Hàm cập nhật thông tin
   logout: () => void;
   continueAsGuest: () => void;
 }
@@ -21,18 +30,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const login = (email: string) => {
-    setUser({ name: 'Người dùng mẫu', email: email });
+    // Giả lập login lấy thông tin cũ (hoặc mặc định rỗng)
+    setUser({
+      name: 'Người dùng mẫu',
+      email: email,
+      emergencyContacts: [],
+    });
     setIsGuest(false);
   };
 
-  const register = (name: string, email: string) => {
-    setUser({ name: name, email: email });
+  const register = (name: string, email: string, contacts: EmergencyContact[]) => {
+    setUser({ name: name, email: email, emergencyContacts: contacts });
     setIsGuest(false);
+  };
+
+  const updateUser = (updatedUser: UserProfile) => {
+    setUser(updatedUser);
   };
 
   const logout = () => {
     setUser(null);
-    setIsGuest(true); 
+    setIsGuest(true);
   };
 
   const continueAsGuest = () => {
@@ -40,7 +58,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isGuest, user, login, register, logout, continueAsGuest }}>
+    <AuthContext.Provider
+      value={{ isGuest, user, login, register, updateUser, logout, continueAsGuest }}
+    >
       {children}
     </AuthContext.Provider>
   );

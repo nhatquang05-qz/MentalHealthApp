@@ -1,5 +1,13 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,7 +28,7 @@ export default function MoodHistoryScreen() {
   useFocusEffect(
     useCallback(() => {
       loadHistory();
-    }, [])
+    }, []),
   );
 
   const loadHistory = async () => {
@@ -43,9 +51,9 @@ export default function MoodHistoryScreen() {
       if (item.data && item.data.mood) {
         // @ts-ignore
         if (counts[item.data.mood] !== undefined) {
-           // @ts-ignore
-           counts[item.data.mood]++;
-           total++;
+          // @ts-ignore
+          counts[item.data.mood]++;
+          total++;
         }
       }
     });
@@ -54,11 +62,31 @@ export default function MoodHistoryScreen() {
 
     // Tạo dữ liệu cho PieChart
     return [
-      { value: counts.happy, color: '#4CAF50', text: `${Math.round(counts.happy/total*100)}%`, label: 'Vui vẻ' },
-      { value: counts.normal, color: '#FFC107', text: `${Math.round(counts.normal/total*100)}%`, label: 'Bình thường' },
-      { value: counts.sad, color: '#2196F3', text: `${Math.round(counts.sad/total*100)}%`, label: 'Buồn' },
-      { value: counts.stress, color: '#FF5252', text: `${Math.round(counts.stress/total*100)}%`, label: 'Căng thẳng' },
-    ].filter(item => item.value > 0); // Chỉ hiện những cảm xúc có dữ liệu
+      {
+        value: counts.happy,
+        color: '#4CAF50',
+        text: `${Math.round((counts.happy / total) * 100)}%`,
+        label: 'Vui vẻ',
+      },
+      {
+        value: counts.normal,
+        color: '#FFC107',
+        text: `${Math.round((counts.normal / total) * 100)}%`,
+        label: 'Bình thường',
+      },
+      {
+        value: counts.sad,
+        color: '#2196F3',
+        text: `${Math.round((counts.sad / total) * 100)}%`,
+        label: 'Buồn',
+      },
+      {
+        value: counts.stress,
+        color: '#FF5252',
+        text: `${Math.round((counts.stress / total) * 100)}%`,
+        label: 'Căng thẳng',
+      },
+    ].filter((item) => item.value > 0); // Chỉ hiện những cảm xúc có dữ liệu
   }, [markedDates]);
 
   // Render chú thích cho biểu đồ
@@ -78,7 +106,7 @@ export default function MoodHistoryScreen() {
   const onDayPress = (day: DateData) => {
     const dateString = day.dateString;
     setSelectedDate(dateString);
-    
+
     // @ts-ignore
     if (markedDates[dateString] && markedDates[dateString].data) {
       // @ts-ignore
@@ -99,7 +127,6 @@ export default function MoodHistoryScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        
         {/* 1. PHẦN LỊCH */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Calendar
@@ -122,62 +149,100 @@ export default function MoodHistoryScreen() {
 
         {/* 2. PHẦN CHI TIẾT NGÀY */}
         {selectedDate && (
-            <View style={styles.sectionContainer}>
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Chi tiết ngày {selectedDate}</Text>
-                {selectedData ? (
-                    <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
-                    <View style={[styles.moodIcon, { backgroundColor: '#E8F5E9' }]}>
-                        <Ionicons name="happy" size={32} color="#4CAF50" />
-                    </View>
-                    <View style={{flex: 1}}>
-                        <Text style={[styles.moodTitle, { color: colors.text }]}>
-                            {selectedData.mood === 'happy' ? 'Vui vẻ' : selectedData.mood === 'stress' ? 'Căng thẳng' : 'Bình thường'}
-                        </Text>
-                        <Text style={[styles.moodDesc, { color: colors.subText }]}>{selectedData.note}</Text>
-                    </View>
-                    <View>
-                        <Text style={[styles.score, { color: colors.primary }]}>{selectedData.score}đ</Text>
-                    </View>
-                    </View>
-                ) : (
-                    <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                        <Text style={{ color: colors.subText }}>Chưa có dữ liệu.</Text>
-                    </View>
-                )}
-            </View>
+          <View style={styles.sectionContainer}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Chi tiết ngày {selectedDate}
+            </Text>
+            {selectedData ? (
+              <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
+                <View style={[styles.moodIcon, { backgroundColor: '#E8F5E9' }]}>
+                  <Ionicons name="happy" size={32} color="#4CAF50" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.moodTitle, { color: colors.text }]}>
+                    {selectedData.mood === 'happy'
+                      ? 'Vui vẻ'
+                      : selectedData.mood === 'stress'
+                      ? 'Căng thẳng'
+                      : 'Bình thường'}
+                  </Text>
+                  <Text style={[styles.moodDesc, { color: colors.subText }]}>
+                    {selectedData.note}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={[styles.score, { color: colors.primary }]}>
+                    {selectedData.score}đ
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View
+                style={[
+                  styles.emptyCard,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+              >
+                <Text style={{ color: colors.subText }}>Chưa có dữ liệu.</Text>
+              </View>
+            )}
+          </View>
         )}
 
         {/* 3. PHẦN BIỂU ĐỒ THỐNG KÊ (MỚI) */}
         {pieData.length > 0 && (
-            <View style={[styles.card, { backgroundColor: colors.card, marginTop: 20, alignItems: 'center', paddingVertical: 20 }]}>
-                <Text style={[styles.chartTitle, { color: colors.text }]}>Tổng quan cảm xúc</Text>
-                
-                <View style={{alignItems: 'center', marginVertical: 10}}>
-                    <PieChart
-                        data={pieData}
-                        donut
-                        showText
-                        textColor="white"
-                        radius={100}
-                        innerRadius={60}
-                        textSize={12}
-                        fontWeight="bold"
-                        centerLabelComponent={() => {
-                            return (
-                                <View style={{justifyContent: 'center', alignItems: 'center'}}>
-                                    <Text style={{fontSize: 22, color: colors.text, fontWeight: 'bold'}}>{pieData.length}</Text>
-                                    <Text style={{fontSize: 12, color: colors.subText}}>Ngày</Text>
-                                </View>
-                            );
+          <View
+            style={[
+              styles.card,
+              {
+                backgroundColor: colors.card,
+                marginTop: 20,
+                alignItems: 'center',
+                paddingVertical: 20,
+              },
+            ]}
+          >
+            <Text style={[styles.chartTitle, { color: colors.text }]}>Tổng quan cảm xúc</Text>
+
+            <View style={{ alignItems: 'center', marginVertical: 10 }}>
+              <PieChart
+                data={pieData}
+                donut
+                showText
+                textColor="white"
+                radius={100}
+                innerRadius={60}
+                textSize={12}
+                fontWeight="bold"
+                centerLabelComponent={() => {
+                  return (
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 22,
+                          color: colors.text,
+                          fontWeight: 'bold',
                         }}
-                    />
-                </View>
-                
-                {renderLegendComponent()}
+                      >
+                        {pieData.length}
+                      </Text>
+                      <Text style={{ fontSize: 12, color: colors.subText }}>Ngày</Text>
+                    </View>
+                  );
+                }}
+              />
             </View>
+
+            {renderLegendComponent()}
+          </View>
         )}
 
-        <View style={{height: 40}} />
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -185,11 +250,18 @@ export default function MoodHistoryScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 10 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
   backButton: { padding: 5 },
   headerTitle: { fontSize: 20, fontWeight: 'bold' },
   container: { padding: 20 },
-  
+
   card: {
     borderRadius: 20,
     padding: 10,
@@ -197,29 +269,58 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
-    elevation: 3
+    elevation: 3,
   },
-  
+
   sectionContainer: { marginTop: 20 },
   sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 10 },
-  
+
   resultCard: {
-    flexDirection: 'row', alignItems: 'center',
-    padding: 16, borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
     gap: 15,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, elevation: 2
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    elevation: 2,
   },
   emptyCard: {
-    padding: 20, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', borderWidth: 1
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderStyle: 'dashed',
+    borderWidth: 1,
   },
-  moodIcon: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
+  moodIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   moodTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   moodDesc: { fontSize: 14 },
   score: { fontSize: 18, fontWeight: 'bold' },
 
   // Styles cho biểu đồ
-  chartTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, width: '100%', textAlign: 'left', paddingLeft: 10 },
-  legendWrapper: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 15, marginTop: 10 },
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    width: '100%',
+    textAlign: 'left',
+    paddingLeft: 10,
+  },
+  legendWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 15,
+    marginTop: 10,
+  },
   legendItem: { flexDirection: 'row', alignItems: 'center' },
-  legendDot: { width: 10, height: 10, borderRadius: 5, marginRight: 6 }
+  legendDot: { width: 10, height: 10, borderRadius: 5, marginRight: 6 },
 });

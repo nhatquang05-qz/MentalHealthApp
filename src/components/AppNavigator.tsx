@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
-import { Platform } from 'react-native'; 
+import { Platform } from 'react-native';
 
 import HomeScreen from '../screens/HomeScreen';
 import SurveyScreen from '../screens/SurveyScreen';
@@ -20,7 +20,7 @@ import BurnWorriesScreen from '../screens/BurnWorriesScreen';
 import SOSScreen from '../screens/SOSScreen';
 import MoodHistoryScreen from '../screens/MoodHistoryScreen';
 import GratitudeScreen from '../screens/GratitudeScreen';
-
+import MapScreen from '../screens/MapScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -36,8 +36,8 @@ function MainTabs() {
         tabBarInactiveTintColor: colors.subText,
         tabBarStyle: {
           backgroundColor: colors.card,
-          height: Platform.OS === 'ios' ? 95 : 70, 
-          paddingBottom: Platform.OS === 'ios' ? 30 : 10, 
+          height: Platform.OS === 'ios' ? 95 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 10,
           borderTopWidth: 0,
           elevation: 10,
@@ -88,6 +88,7 @@ export default function AppNavigator() {
       <Stack.Screen name="MoodHistory" component={MoodHistoryScreen} />
       <Stack.Screen name="Gratitude" component={GratitudeScreen} />
       <Stack.Screen name="Quote" component={QuoteScreen} />
+      <Stack.Screen name="Map" component={MapScreen} />
     </Stack.Navigator>
   );
 }

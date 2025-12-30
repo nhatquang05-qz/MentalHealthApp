@@ -9,29 +9,29 @@ const { width } = Dimensions.get('window');
 const questions = [
   {
     id: 1,
-    text: "Tôi thường cảm thấy lo lắng trong vài ngày gần đây.",
-    options: ["Rất không đồng ý", "Không đồng ý", "Đồng ý", "Rất đồng ý"]
+    text: 'Tôi thường cảm thấy lo lắng trong vài ngày gần đây.',
+    options: ['Rất không đồng ý', 'Không đồng ý', 'Đồng ý', 'Rất đồng ý'],
   },
   {
     id: 2,
-    text: "Tôi cảm thấy khó ngủ hoặc ngủ không ngon giấc.",
-    options: ["Rất không đồng ý", "Không đồng ý", "Đồng ý", "Rất đồng ý"]
+    text: 'Tôi cảm thấy khó ngủ hoặc ngủ không ngon giấc.',
+    options: ['Rất không đồng ý', 'Không đồng ý', 'Đồng ý', 'Rất đồng ý'],
   },
   {
     id: 3,
-    text: "Tôi cảm thấy mệt mỏi hoặc thiếu năng lượng.",
-    options: ["Rất không đồng ý", "Không đồng ý", "Đồng ý", "Rất đồng ý"]
+    text: 'Tôi cảm thấy mệt mỏi hoặc thiếu năng lượng.',
+    options: ['Rất không đồng ý', 'Không đồng ý', 'Đồng ý', 'Rất đồng ý'],
   },
   {
     id: 4,
-    text: "Tôi cảm thấy chán ăn hoặc ăn quá nhiều.",
-    options: ["Rất không đồng ý", "Không đồng ý", "Đồng ý", "Rất đồng ý"]
+    text: 'Tôi cảm thấy chán ăn hoặc ăn quá nhiều.',
+    options: ['Rất không đồng ý', 'Không đồng ý', 'Đồng ý', 'Rất đồng ý'],
   },
   {
     id: 5,
-    text: "Tôi gặp khó khăn trong việc tập trung vào công việc.",
-    options: ["Rất không đồng ý", "Không đồng ý", "Đồng ý", "Rất đồng ý"]
-  }
+    text: 'Tôi gặp khó khăn trong việc tập trung vào công việc.',
+    options: ['Rất không đồng ý', 'Không đồng ý', 'Đồng ý', 'Rất đồng ý'],
+  },
 ];
 
 export default function DailyCheckInScreen() {
@@ -76,9 +76,13 @@ export default function DailyCheckInScreen() {
 
         <View style={styles.progressContainer}>
           <View style={[styles.progressBar, { backgroundColor: '#E0E0E0' }]}>
-            <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: '#3995E9' }]} />
+            <View
+              style={[styles.progressFill, { width: `${progress}%`, backgroundColor: '#3995E9' }]}
+            />
           </View>
-          <Text style={[styles.progressText, { color: colors.subText }]}>Câu hỏi {currentIndex + 1}/{questions.length}</Text>
+          <Text style={[styles.progressText, { color: colors.subText }]}>
+            Câu hỏi {currentIndex + 1}/{questions.length}
+          </Text>
         </View>
 
         <View style={styles.contentContainer}>
@@ -93,20 +97,23 @@ export default function DailyCheckInScreen() {
                   key={index}
                   style={[
                     styles.optionButton,
-                    { 
+                    {
                       borderColor: selectedOption === index ? '#3995E9' : colors.border,
-                      backgroundColor: selectedOption === index ? (isDark ? '#1E3A5F' : '#E3F2FD') : 'transparent'
-                    }
+                      backgroundColor:
+                        selectedOption === index ? (isDark ? '#1E3A5F' : '#E3F2FD') : 'transparent',
+                    },
                   ]}
                   onPress={() => handleNext(index)}
                 >
-                  <Text style={[
-                    styles.optionText, 
-                    { 
-                      color: selectedOption === index ? '#3995E9' : colors.subText,
-                      fontWeight: selectedOption === index ? '600' : '400'
-                    }
-                  ]}>
+                  <Text
+                    style={[
+                      styles.optionText,
+                      {
+                        color: selectedOption === index ? '#3995E9' : colors.subText,
+                        fontWeight: selectedOption === index ? '600' : '400',
+                      },
+                    ]}
+                  >
                     {option}
                   </Text>
                 </TouchableOpacity>
@@ -128,7 +135,12 @@ export default function DailyCheckInScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   container: { flex: 1, padding: 20 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   backButton: { padding: 5 },
   headerTitle: { fontSize: 18, fontWeight: 'bold' },
   progressContainer: { marginBottom: 30 },
@@ -146,18 +158,30 @@ const styles = StyleSheet.create({
     elevation: 5,
     minHeight: 400,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
-  questionText: { fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 40, lineHeight: 26 },
+  questionText: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 40,
+    lineHeight: 26,
+  },
   optionsContainer: { width: '100%', gap: 16 },
   optionButton: {
     paddingVertical: 16,
     borderRadius: 30,
     borderWidth: 1,
     alignItems: 'center',
-    width: '100%'
+    width: '100%',
   },
   optionText: { fontSize: 15 },
-  prevButton: { marginTop: 30, padding: 10, backgroundColor: '#3995E9', borderRadius: 20, paddingHorizontal: 30 },
-  prevButtonText: { color: '#fff', fontWeight: '600' }
+  prevButton: {
+    marginTop: 30,
+    padding: 10,
+    backgroundColor: '#3995E9',
+    borderRadius: 20,
+    paddingHorizontal: 30,
+  },
+  prevButtonText: { color: '#fff', fontWeight: '600' },
 });

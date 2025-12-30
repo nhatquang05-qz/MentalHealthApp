@@ -9,7 +9,7 @@ import {
   Animated,
   Alert,
   Keyboard,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -19,8 +19,7 @@ export default function BurnWorriesScreen() {
   const { colors, isDark } = useTheme();
   const navigation = useNavigation();
   const [worryText, setWorryText] = useState('');
-  
-  // Animation values
+
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const translateYAnim = useRef(new Animated.Value(0)).current;
@@ -28,14 +27,13 @@ export default function BurnWorriesScreen() {
 
   const handleBurn = () => {
     if (!worryText.trim()) {
-      Alert.alert("Chưa nhập nội dung", "Hãy viết ra điều gì đang làm phiền bạn.");
+      Alert.alert('Chưa nhập nội dung', 'Hãy viết ra điều gì đang làm phiền bạn.');
       return;
     }
 
     Keyboard.dismiss();
     setIsBurning(true);
 
-    // Chuỗi hiệu ứng: Bay lên, Thu nhỏ, Mờ dần
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -48,25 +46,24 @@ export default function BurnWorriesScreen() {
         useNativeDriver: true,
       }),
       Animated.timing(translateYAnim, {
-        toValue: -200, // Bay lên trên
+        toValue: -200,
         duration: 2000,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Sau khi animation xong
       Alert.alert(
-        "Đã giải tỏa!",
-        "Lo âu của bạn đã được gửi đi. Hãy hít thở sâu và cảm thấy nhẹ nhõm hơn nhé.",
+        'Đã giải tỏa!',
+        'Lo âu của bạn đã được gửi đi. Hãy hít thở sâu và cảm thấy nhẹ nhõm hơn nhé.',
         [
-          { 
-            text: "Quay về", 
-            onPress: () => navigation.goBack() 
+          {
+            text: 'Quay về',
+            onPress: () => navigation.goBack(),
           },
           {
-            text: "Viết tiếp",
-            onPress: resetScreen
-          }
-        ]
+            text: 'Viết tiếp',
+            onPress: resetScreen,
+          },
+        ],
       );
     });
   };
@@ -83,7 +80,7 @@ export default function BurnWorriesScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#121212' : '#2C3E50' }]}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          {/* Header */}
+          {}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
               <Ionicons name="close" size={28} color="#fff" />
@@ -96,18 +93,15 @@ export default function BurnWorriesScreen() {
             Viết ra những điều đang làm bạn căng thẳng, sau đó nhấn nút để "đốt" chúng đi.
           </Text>
 
-          {/* Paper Area */}
+          {}
           <View style={styles.paperContainer}>
-            <Animated.View 
+            <Animated.View
               style={[
-                styles.paper, 
-                { 
+                styles.paper,
+                {
                   opacity: fadeAnim,
-                  transform: [
-                    { scale: scaleAnim },
-                    { translateY: translateYAnim }
-                  ]
-                }
+                  transform: [{ scale: scaleAnim }, { translateY: translateYAnim }],
+                },
               ]}
             >
               <TextInput
@@ -122,13 +116,10 @@ export default function BurnWorriesScreen() {
             </Animated.View>
           </View>
 
-          {/* Burn Button */}
+          {}
           <View style={styles.footer}>
-            <TouchableOpacity 
-              style={[
-                styles.burnButton, 
-                { backgroundColor: isBurning ? '#555' : '#FF6B6B' }
-              ]}
+            <TouchableOpacity
+              style={[styles.burnButton, { backgroundColor: isBurning ? '#555' : '#FF6B6B' }]}
               onPress={handleBurn}
               disabled={isBurning}
             >
@@ -136,7 +127,7 @@ export default function BurnWorriesScreen() {
                 <Text style={styles.burnButtonText}>Đang đốt...</Text>
               ) : (
                 <>
-                  <Ionicons name="flame" size={24} color="#fff" style={{marginRight: 8}} />
+                  <Ionicons name="flame" size={24} color="#fff" style={{ marginRight: 8 }} />
                   <Text style={styles.burnButtonText}>Đốt Bỏ Lo Âu</Text>
                 </>
               )}
@@ -151,11 +142,16 @@ export default function BurnWorriesScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   container: { flex: 1, padding: 20 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   backButton: { padding: 5 },
   headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff' },
   instruction: { color: '#ccc', textAlign: 'center', marginBottom: 30, fontSize: 16 },
-  
+
   paperContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   paper: {
     width: '100%',
@@ -176,7 +172,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     lineHeight: 28,
   },
-  
+
   footer: { marginBottom: 20 },
   burnButton: {
     flexDirection: 'row',
@@ -190,5 +186,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },
-  burnButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
+  burnButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });
