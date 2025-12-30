@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 
-// Dữ liệu nhạc mẫu
 const musicCategories: any = {
   meditation: [
     { id: 1, title: 'Sóng Biển', artist: 'Âm Thanh Thiên Nhiên', duration: '15:00' },
@@ -65,7 +64,7 @@ export default function MusicScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={styles.container}>
-        {/* Header */}
+        {}
         <View style={styles.header}>
           <TouchableOpacity
             style={[styles.backButton, { backgroundColor: colors.card }]}
@@ -76,7 +75,7 @@ export default function MusicScreen() {
           <Text style={[styles.headerTitle, { color: colors.text }]}>Thư Viện Nhạc</Text>
         </View>
 
-        {/* Player Mini (Nếu đang chọn bài) */}
+        {}
         {currentSong ? (
           <View style={[styles.playerCard, { backgroundColor: colors.card }]}>
             <View style={[styles.diskIcon, { backgroundColor: colors.iconBg }]}>
@@ -97,7 +96,6 @@ export default function MusicScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          // Intro Card khi chưa chọn bài
           <View style={[styles.introCard, { backgroundColor: isDark ? '#333' : '#E3F2FD' }]}>
             <Text style={{ fontSize: 40, marginBottom: 10 }}>🎵</Text>
             <Text style={[styles.introTitle, { color: colors.text }]}>Tìm Sự Bình Yên</Text>
@@ -107,7 +105,7 @@ export default function MusicScreen() {
           </View>
         )}
 
-        {/* Tabs */}
+        {}
         <View style={styles.tabContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {tabs.map((tab) => (
@@ -134,7 +132,7 @@ export default function MusicScreen() {
           </ScrollView>
         </View>
 
-        {/* Danh sách nhạc */}
+        {}
         <ScrollView showsVerticalScrollIndicator={false}>
           {musicCategories[activeTab]?.map((song: any) => (
             <TouchableOpacity

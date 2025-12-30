@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { Alert } from 'react-native';
+import { API_URL } from '../config';
 
 export interface EmergencyContact {
   name: string;
@@ -7,6 +8,7 @@ export interface EmergencyContact {
 }
 
 interface UserProfile {
+  id: number;
   name: string;
   email: string;
   emergencyContacts: EmergencyContact[];
@@ -16,7 +18,12 @@ interface AuthContextType {
   isGuest: boolean;
   user: UserProfile | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, contacts: EmergencyContact[]) => Promise<void>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    contacts: EmergencyContact[],
+  ) => Promise<void>;
   updateUser: (user: UserProfile) => void;
   logout: () => void;
   continueAsGuest: () => void;
@@ -24,15 +31,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = 'http://10.0.116.186:3000/api/auth';
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isGuest, setIsGuest] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,9 +49,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         setUser({
+          id: data.user.id,
           name: data.user.username,
           email: data.user.email,
-          emergencyContacts: [], 
+          emergencyContacts: [],
         });
         setIsGuest(false);
       } else {
@@ -58,9 +64,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (name: string, email: string, password: string, contacts: EmergencyContact[]) => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    contacts: EmergencyContact[],
+  ) => {
     try {
-      const response = await fetch(`${API_URL}/register`, {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

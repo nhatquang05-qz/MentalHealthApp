@@ -8,12 +8,16 @@ import {
   TouchableOpacity,
   Dimensions,
   SafeAreaView,
+  Alert,
+  RefreshControl,
 } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
-import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Thêm useFocusEffect
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Thêm AsyncStorage
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
+
+import { API_URL } from '../config';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -25,7 +29,6 @@ const emotions = [
   { name: 'Cry', img: require('../../assets/images/cry.png'), value: 1 },
 ];
 
-// Dữ liệu biểu đồ mẫu (Bạn có thể nâng cấp để lấy từ AsyncStorage sau này)
 const chartData = [
   { value: 4, label: '2' },
   { value: 3, label: '3' },
@@ -39,93 +42,118 @@ const chartData = [
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
   const navigation = useNavigation<any>();
+  const { user } = useAuth();
 
-  // State quản lý trạng thái
   const [hasCheckedInToday, setHasCheckedInToday] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // useFocusEffect sẽ chạy mỗi khi màn hình này được hiển thị
   useFocusEffect(
     useCallback(() => {
-      checkStatusAndStreak();
-    }, []),
+      if (user) {
+        checkStatusAndStreak();
+      } else {
+        setHasCheckedInToday(false);
+        setCurrentStreak(0);
+      }
+    }, [user]),
   );
 
   const checkStatusAndStreak = async () => {
     try {
-      const dataJson = await AsyncStorage.getItem('mood_history');
-      const data = dataJson ? JSON.parse(dataJson) : {};
+      const response = await fetch(`${API_URL}/data/test-result/${(user as any).id}`);
+      const data = await response.json();
 
-      // 1. Kiểm tra đã check-in hôm nay chưa
-      // Lưu ý: Phải dùng cùng format ngày với bên DailyResultScreen
+      if (!Array.isArray(data)) return;
+
+      const dailyCheckIns = data.filter((item: any) => item.testType === 'Daily Check-In');
+
+      const checkInDates = new Set(dailyCheckIns.map((item: any) => item.createdAt.split('T')[0]));
+
       const today = new Date().toISOString().split('T')[0];
-
-      if (data[today]) {
+      if (checkInDates.has(today)) {
         setHasCheckedInToday(true);
       } else {
         setHasCheckedInToday(false);
       }
 
-      // 2. Tính toán Streak (Chuỗi ngày liên tiếp)
       let streak = 0;
       let checkDate = new Date();
 
-      // Nếu hôm nay đã check-in, bắt đầu đếm từ hôm nay.
-      // Nếu chưa, bắt đầu đếm từ hôm qua.
-      // Tuy nhiên logic đơn giản nhất là cứ đếm lùi từ hôm nay,
-      // nếu hôm nay có thì +1, sau đó lùi về hôm qua kiểm tiếp.
-
-      // Bước A: Kiểm tra hôm nay
       const todayStr = checkDate.toISOString().split('T')[0];
-      if (data[todayStr]) {
+      if (checkInDates.has(todayStr)) {
         streak++;
       }
 
-      // Bước B: Kiểm tra các ngày quá khứ
-      // Lùi về 1 ngày
       checkDate.setDate(checkDate.getDate() - 1);
 
       while (true) {
         const dateStr = checkDate.toISOString().split('T')[0];
-        if (data[dateStr]) {
+        if (checkInDates.has(dateStr)) {
           streak++;
-          checkDate.setDate(checkDate.getDate() - 1); // Lùi tiếp
+          checkDate.setDate(checkDate.getDate() - 1);
         } else {
-          break; // Ngắt chuỗi nếu gặp ngày không check-in
+          break;
         }
       }
 
       setCurrentStreak(streak);
     } catch (error) {
-      console.error('Lỗi khi tải dữ liệu:', error);
+      console.error('Lỗi khi tải dữ liệu từ API:', error);
     }
   };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    checkStatusAndStreak().finally(() => setRefreshing(false));
+  }, []);
 
   const handleEmotionSelect = (emotionName: string) => {
     setSelectedEmotion(emotionName);
     setTimeout(() => {
       navigation.navigate('DailyCheckIn');
-      setSelectedEmotion(null); // Reset sau khi navigate
+      setSelectedEmotion(null);
     }, 300);
+  };
+
+  const handleReCheckIn = () => {
+    Alert.alert(
+      'Làm lại khảo sát?',
+      'Bạn đã check-in hôm nay. Bạn có muốn thực hiện lại để cập nhật cảm xúc mới không?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        { text: 'Làm lại', onPress: () => navigation.navigate('DailyCheckIn') },
+      ],
+    );
   };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Header */}
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
+        {}
         <View style={styles.header}>
           <View style={styles.soulCareLogo}>
             <Text style={styles.soulCareText}>SoulCare</Text>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            {/* Nút SOS */}
+            {}
             <TouchableOpacity style={styles.sosButton} onPress={() => navigation.navigate('SOS')}>
               <Text style={{ fontWeight: '900', color: '#fff', fontSize: 12 }}>SOS</Text>
             </TouchableOpacity>
 
-            {/* Streak hiển thị số thực tế */}
+            {}
             <View
               style={[styles.streakContainer, { backgroundColor: isDark ? '#333' : '#FFF0E6' }]}
             >
@@ -139,7 +167,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Thẻ Cảm xúc / Check-in */}
+        {}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View
             style={{
@@ -155,7 +183,7 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            {/* Ẩn huy hiệu +1 Streak nếu đã check-in */}
+            {}
             {!hasCheckedInToday && (
               <View
                 style={{
@@ -178,7 +206,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Logic hiển thị: Nếu chưa check-in -> Hiện Icon. Nếu rồi -> Hiện thông báo */}
+          {}
           {!hasCheckedInToday ? (
             <View style={styles.emotionContainer}>
               {emotions.map((emotion) => (
@@ -203,14 +231,22 @@ export default function HomeScreen() {
               <Text style={[styles.checkedInText, { color: colors.text }]}>
                 Bạn đã check-in hôm nay rồi.
               </Text>
-              <Text style={{ color: colors.subText, fontSize: 13, marginTop: 4 }}>
+              <Text style={{ color: colors.subText, fontSize: 13, marginTop: 4, marginBottom: 15 }}>
                 Hãy quay lại vào ngày mai để duy trì chuỗi nhé!
               </Text>
+
+              {}
+              <TouchableOpacity
+                style={[styles.reCheckInButton, { borderColor: colors.primary }]}
+                onPress={handleReCheckIn}
+              >
+                <Text style={{ color: colors.primary, fontWeight: '600' }}>Làm lại khảo sát</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
 
-        {/* Thẻ Biểu đồ */}
+        {}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.cardTitle, { color: colors.text }]}>Biểu đồ tâm trạng</Text>
           <Text style={[styles.cardSubtitle, { color: colors.subText }]}>Tuần trước</Text>
@@ -244,7 +280,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Khu vực Tiện ích */}
+        {}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Tiện ích</Text>
 
         <View style={{ flexDirection: 'row', gap: 15, flexWrap: 'wrap' }}>
@@ -453,7 +489,6 @@ const styles = StyleSheet.create({
   },
   emotionIcon: { width: 44, height: 44 },
 
-  // Style cho trạng thái đã check-in
   checkedInContainer: {
     alignItems: 'center',
     paddingVertical: 20,
@@ -463,6 +498,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 10,
+  },
+  reCheckInButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginTop: 5,
   },
 
   chartContainer: { paddingLeft: 0, paddingTop: 10, marginLeft: -10 },

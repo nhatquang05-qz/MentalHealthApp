@@ -25,15 +25,10 @@ export default function LoginScreen() {
       Alert.alert('Thông báo', 'Vui lòng nhập đầy đủ thông tin');
       return;
     }
-    
-    // Gọi API Login
-    // AuthContext sẽ tự hiển thị Alert nếu lỗi hoặc cập nhật state user nếu thành công
+
     await login(email, password);
-    
-    // Tạm thời quay lại sau khi login. 
-    // Nếu AppNavigator của bạn được setup để tự chuyển màn hình khi có `user`, 
-    // dòng navigation.goBack() này có thể không cần thiết hoặc chỉ dùng khi Login là 1 màn hình popup.
-    navigation.goBack(); 
+
+    navigation.goBack();
   };
 
   return (

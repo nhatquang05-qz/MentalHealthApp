@@ -35,8 +35,16 @@ exports.getMoodHistory = async (req, res) => {
 
 exports.saveTestResult = async (req, res) => {
   try {
-    const { userId, testType, score, result } = req.body;
-    const newTest = await TestResult.create({ userId, testType, score, result });
+    const { userId, testType, score, result, details } = req.body;    
+    const detailsString = Array.isArray(details) ? JSON.stringify(details) : details;
+    const newTest = await TestResult.create({ 
+      userId, 
+      testType, 
+      score, 
+      result, 
+      details: detailsString 
+    });
+    
     res.status(201).json({ message: 'Đã lưu kết quả test', data: newTest });
   } catch (error) {
     console.error(error);
@@ -58,3 +66,4 @@ exports.getTestHistory = async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi lấy lịch sử test' });
   }
 };
+

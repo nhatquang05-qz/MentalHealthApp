@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
-const TestResult = sequelize.define('TestResult', {
+const Gratitude = sequelize.define('Gratitude', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -11,20 +11,12 @@ const TestResult = sequelize.define('TestResult', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  testType: { 
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  score: { 
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  result: { 
-    type: DataTypes.STRING,
+  content: { 
+    type: DataTypes.TEXT,
     allowNull: true
   },
-  details: {
-    type: DataTypes.TEXT, 
+  imageUrl: { 
+    type: DataTypes.STRING,
     allowNull: true
   },
   createdAt: {
@@ -33,4 +25,4 @@ const TestResult = sequelize.define('TestResult', {
   }
 });
 
-module.exports = TestResult;
+module.exports = Gratitude;

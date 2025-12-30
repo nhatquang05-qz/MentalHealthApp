@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,54 +11,59 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Image, // Import Image component
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker'; // Import thư viện ảnh
+import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '../context/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 interface GratitudeItem {
-  id: string;
-  text: string;
-  imageUri?: string; // Thêm trường lưu đường dẫn ảnh (tùy chọn)
-  date: string;
+  id: number;
+  content: string;
+  imageUrl?: string;
+  createdAt: string;
 }
 
 export default function GratitudeScreen() {
   const { colors, isDark } = useTheme();
   const navigation = useNavigation();
-  const [text, setText] = useState('');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null); // State lưu ảnh đang chọn tạm thời
-  const [items, setItems] = useState<GratitudeItem[]>([]);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    loadGratitude();
-  }, []);
+  const [text, setText] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [items, setItems] = useState<GratitudeItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        loadGratitude();
+      }
+    }, [user]),
+  );
 
   const loadGratitude = async () => {
     try {
-      const storedItems = await AsyncStorage.getItem('gratitude_list');
-      if (storedItems) {
-        setItems(JSON.parse(storedItems));
+      setLoading(true);
+      const response = await fetch(`${API_URL}/gratitude/${(user as any).id}`);
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        setItems(data);
       }
     } catch (error) {
       console.error('Failed to load gratitude items', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveGratitude = async (newItems: GratitudeItem[]) => {
-    try {
-      await AsyncStorage.setItem('gratitude_list', JSON.stringify(newItems));
-    } catch (error) {
-      console.error('Failed to save gratitude item', error);
-    }
-  };
-
-  // Hàm mở thư viện ảnh
   const pickImage = async () => {
-    // Yêu cầu quyền truy cập (quan trọng cho iOS)
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert(
@@ -69,10 +74,10 @@ export default function GratitudeScreen() {
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'], // Chỉ lấy ảnh
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.8, // Giảm chất lượng một chút để tối ưu lưu trữ
+      quality: 0.7,
     });
 
     if (!result.canceled) {
@@ -80,58 +85,95 @@ export default function GratitudeScreen() {
     }
   };
 
-  const handleAdd = () => {
-    // Cho phép đăng nếu có chữ HOẶC có ảnh
+  const handleAdd = async () => {
     if (!text.trim() && !selectedImage) {
       Alert.alert('Chưa có nội dung', 'Hãy viết điều gì đó hoặc chọn một bức ảnh.');
       return;
     }
 
-    const newItem: GratitudeItem = {
-      id: Date.now().toString(),
-      text: text.trim(),
-      imageUri: selectedImage || undefined, // Lưu URI ảnh nếu có
-      date: new Date().toLocaleDateString('vi-VN'),
-    };
+    setIsPosting(true);
 
-    const updatedItems = [newItem, ...items];
-    setItems(updatedItems);
-    saveGratitude(updatedItems);
+    try {
+      const formData = new FormData();
 
-    // Reset form
-    setText('');
-    setSelectedImage(null);
-    Keyboard.dismiss();
+      formData.append('userId', String((user as any).id));
+      formData.append('content', text.trim());
+
+      if (selectedImage) {
+        const localUri = selectedImage;
+        const filename = localUri.split('/').pop() || 'photo.jpg';
+
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image/jpeg`;
+
+        formData.append('image', {
+          uri: localUri,
+          name: filename,
+          type: type,
+        } as any);
+      }
+
+      const response = await fetch(`${API_URL}/gratitude`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setText('');
+        setSelectedImage(null);
+        Keyboard.dismiss();
+        loadGratitude();
+      } else {
+        Alert.alert('Lỗi', result.message || 'Không thể lưu nhật ký');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      Alert.alert('Lỗi kết nối', 'Không thể kết nối đến server');
+    } finally {
+      setIsPosting(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: number) => {
     Alert.alert('Xóa nhật ký', 'Bạn có chắc muốn xóa kỷ niệm này không?', [
       { text: 'Hủy', style: 'cancel' },
       {
         text: 'Xóa',
         style: 'destructive',
-        onPress: () => {
-          const updatedItems = items.filter((item) => item.id !== id);
-          setItems(updatedItems);
-          saveGratitude(updatedItems);
+        onPress: async () => {
+          try {
+            await fetch(`${API_URL}/gratitude/${id}`, { method: 'DELETE' });
+
+            setItems((prev) => prev.filter((item) => item.id !== id));
+          } catch (error) {
+            Alert.alert('Lỗi', 'Không thể xóa bài viết');
+          }
         },
       },
     ]);
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  };
+
   const renderItem = ({ item }: { item: GratitudeItem }) => (
     <View style={[styles.itemCard, { backgroundColor: colors.card }]}>
       <View style={styles.itemContent}>
-        <Text style={[styles.itemDate, { color: colors.subText }]}>{item.date}</Text>
+        <Text style={[styles.itemDate, { color: colors.subText }]}>
+          {formatDate(item.createdAt)}
+        </Text>
 
-        {/* Hiển thị ảnh nếu có */}
-        {item.imageUri && (
-          <Image source={{ uri: item.imageUri }} style={styles.itemImage} resizeMode="cover" />
+        {}
+        {item.imageUrl && (
+          <Image source={{ uri: item.imageUrl }} style={styles.itemImage} resizeMode="cover" />
         )}
 
-        {/* Hiển thị text nếu có */}
-        {item.text ? (
-          <Text style={[styles.itemText, { color: colors.text }]}>{item.text}</Text>
+        {item.content ? (
+          <Text style={[styles.itemText, { color: colors.text }]}>{item.content}</Text>
         ) : null}
       </View>
 
@@ -158,27 +200,31 @@ export default function GratitudeScreen() {
         </Text>
       </View>
 
-      <FlatList
-        data={items}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="leaf-outline" size={60} color={colors.border} />
-            <Text style={{ color: colors.subText, marginTop: 10 }}>
-              Chưa có nhật ký nào. Hãy viết điều đầu tiên nhé!
-            </Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={items}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="leaf-outline" size={60} color={colors.border} />
+              <Text style={{ color: colors.subText, marginTop: 10 }}>
+                Chưa có nhật ký nào. Hãy viết điều đầu tiên nhé!
+              </Text>
+            </View>
+          }
+        />
+      )}
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
-        {/* Khu vực hiển thị Preview ảnh đang chọn */}
+        {}
         {selectedImage && (
           <View
             style={[
@@ -197,23 +243,36 @@ export default function GratitudeScreen() {
         )}
 
         <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
-          {/* Nút chọn ảnh */}
-          <TouchableOpacity onPress={pickImage} style={styles.iconButton}>
-            <Ionicons name="image-outline" size={26} color={colors.primary} />
+          <TouchableOpacity onPress={pickImage} style={styles.iconButton} disabled={isPosting}>
+            <Ionicons
+              name="image-outline"
+              size={26}
+              color={isPosting ? colors.subText : colors.primary}
+            />
           </TouchableOpacity>
 
           <TextInput
             style={[styles.input, { backgroundColor: colors.inputBg, color: colors.text }]}
-            placeholder="Hôm nay bạn biết ơn điều gì?"
+            placeholder={isPosting ? 'Đang gửi...' : 'Hôm nay bạn biết ơn điều gì?'}
             placeholderTextColor={colors.subText}
             value={text}
             onChangeText={setText}
+            editable={!isPosting}
           />
+
           <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: colors.primary }]}
+            style={[
+              styles.addButton,
+              { backgroundColor: isPosting ? colors.subText : colors.primary },
+            ]}
             onPress={handleAdd}
+            disabled={isPosting}
           >
-            <Ionicons name="send" size={20} color="#fff" />
+            {isPosting ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Ionicons name="send" size={20} color="#fff" />
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -243,7 +302,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     flexDirection: 'row',
-    alignItems: 'flex-start', // Căn chỉnh lên trên để đẹp hơn khi có ảnh
+    alignItems: 'flex-start',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -262,7 +321,6 @@ const styles = StyleSheet.create({
 
   emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 50 },
 
-  // Styles cho phần Input và Preview
   previewContainer: {
     padding: 10,
     paddingHorizontal: 20,

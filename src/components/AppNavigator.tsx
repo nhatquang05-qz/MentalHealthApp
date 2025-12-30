@@ -21,6 +21,7 @@ import SOSScreen from '../screens/SOSScreen';
 import MoodHistoryScreen from '../screens/MoodHistoryScreen';
 import GratitudeScreen from '../screens/GratitudeScreen';
 import MapScreen from '../screens/MapScreen';
+import AllHistoryScreen from '../screens/AllHistoryScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -89,6 +90,11 @@ export default function AppNavigator() {
       <Stack.Screen name="Gratitude" component={GratitudeScreen} />
       <Stack.Screen name="Quote" component={QuoteScreen} />
       <Stack.Screen name="Map" component={MapScreen} />
+      <Stack.Screen
+        name="AllHistory"
+        component={AllHistoryScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }

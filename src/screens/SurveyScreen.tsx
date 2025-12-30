@@ -1,8 +1,20 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  SafeAreaView,
+  RefreshControl,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
+import { testData } from '../data/testData';
+
+import { API_URL } from '../config';
 
 const surveyCategories = [
   {
@@ -25,22 +37,119 @@ const surveyCategories = [
   },
 ];
 
-const historyData = [
-  { id: 1, type: 'Test Trầm Cảm', date: '20/03/2024', score: 'Nhẹ', severity: 'low' },
-  { id: 2, type: 'Test Lo Âu', date: '18/03/2024', score: 'Trung Bình', severity: 'medium' },
-];
+const getTestName = (type: string) => {
+  switch (type) {
+    case 'depression':
+      return 'Test Trầm Cảm';
+    case 'anxiety':
+      return 'Test Lo âu';
+    case 'stress':
+      return 'Test Căng Thẳng';
+    default:
+      return type;
+  }
+};
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+};
+
+const getSeverityColor = (result: string, colors: any) => {
+  if (!result) return colors.subText;
+  const lowerRes = result.toLowerCase();
+
+  if (lowerRes.includes('cao') || lowerRes.includes('nặng') || lowerRes.includes('chú ý')) {
+    return '#FF5252';
+  }
+  if (lowerRes.includes('trung bình') || lowerRes.includes('vừa')) {
+    return '#FFC107';
+  }
+  return '#4CAF50';
+};
 
 export default function SurveyScreen() {
   const { colors, isDark } = useTheme();
   const navigation = useNavigation<any>();
+  const { user } = useAuth();
+
+  const [historyList, setHistoryList] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        fetchTestHistory();
+      } else {
+        setHistoryList([]);
+      }
+    }, [user]),
+  );
+
+  const fetchTestHistory = async () => {
+    try {
+      const response = await fetch(`${API_URL}/data/test-result/${(user as any).id}`);
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        const filteredData = data
+          .filter((item: any) => item.testType !== 'Daily Check-In')
+          .slice(0, 5);
+
+        setHistoryList(filteredData);
+      }
+    } catch (error) {
+      console.error('Lỗi lấy lịch sử test:', error);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchTestHistory();
+    setRefreshing(false);
+  };
 
   const handleStartTest = (testId: string) => {
     navigation.navigate('SpecificTest', { testType: testId });
   };
 
+  const handlePressHistoryItem = (item: any) => {
+    let parsedAnswers = [];
+    try {
+      parsedAnswers = typeof item.details === 'string' ? JSON.parse(item.details) : item.details;
+    } catch (e) {
+      console.log('Lỗi parse details:', e);
+    }
+
+    const testInfo = testData[item.testType as keyof typeof testData];
+
+    let isCritical = false;
+    if (item.testType === 'depression' && Array.isArray(parsedAnswers) && parsedAnswers[9] >= 2) {
+      isCritical = true;
+    }
+
+    navigation.navigate('SpecificResult', {
+      testType: item.testType,
+      score: item.score,
+      title: testInfo ? testInfo.title : item.testType,
+      isCritical: isCritical,
+      answers: parsedAnswers,
+      fromHistory: true,
+    });
+  };
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
         <View style={styles.header}>
           <TouchableOpacity
             style={[styles.backButton, { backgroundColor: colors.card }]}
@@ -83,35 +192,65 @@ export default function SurveyScreen() {
               flexDirection: 'row',
               justifyContent: 'space-between',
               marginBottom: 15,
+              alignItems: 'center',
             }}
           >
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Lịch Sử Kết Quả</Text>
-            <Text style={{ color: colors.primary }}>Xem tất cả</Text>
+
+            {}
+            <TouchableOpacity onPress={() => navigation.navigate('AllHistory')}>
+              <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 14 }}>
+                Xem tất cả
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {historyData.map((item) => (
-            <View
-              key={item.id}
-              style={[styles.historyItem, { backgroundColor: isDark ? '#2C2C2C' : '#F3F4F6' }]}
-            >
-              <View
-                style={[
-                  styles.dot,
-                  {
-                    backgroundColor: item.severity === 'low' ? colors.success : '#eab308',
-                  },
-                ]}
-              />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={[styles.historyType, { color: colors.text }]}>{item.type}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="time-outline" size={12} color={colors.subText} />
-                  <Text style={[styles.historyDate, { color: colors.subText }]}> {item.date}</Text>
-                </View>
-              </View>
-              <Text style={[styles.historyScore, { color: colors.subText }]}>{item.score}</Text>
+          {historyList.length > 0 ? (
+            historyList.map((item) => {
+              const severityColor = getSeverityColor(item.result, colors);
+              const testName = getTestName(item.testType);
+
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.historyItem, { backgroundColor: isDark ? '#2C2C2C' : '#F3F4F6' }]}
+                  onPress={() => handlePressHistoryItem(item)}
+                >
+                  <View
+                    style={[
+                      styles.dot,
+                      {
+                        backgroundColor: severityColor,
+                      },
+                    ]}
+                  />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text style={[styles.historyType, { color: colors.text }]}>{testName}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Ionicons name="time-outline" size={12} color={colors.subText} />
+                      <Text style={[styles.historyDate, { color: colors.subText }]}>
+                        {' '}
+                        {formatDate(item.createdAt)}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.historyScore, { color: severityColor, fontWeight: '600' }]}>
+                    {item.result} ({item.score})
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={colors.subText}
+                    style={{ marginLeft: 8 }}
+                  />
+                </TouchableOpacity>
+              );
+            })
+          ) : (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+              <Text style={{ color: colors.subText }}>Chưa có bài kiểm tra nào.</Text>
             </View>
-          ))}
+          )}
         </View>
         <View style={{ height: 30 }} />
       </ScrollView>

@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  Alert
+  Alert,
 } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,9 +15,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { PieChart } from 'react-native-gifted-charts';
-
-
-const API_URL = 'http://10.0.116.186/api/data';
+import { API_URL } from '../config';
 
 export default function MoodHistoryScreen() {
   const { colors, isDark } = useTheme();
@@ -31,33 +29,33 @@ export default function MoodHistoryScreen() {
     useCallback(() => {
       if (user) {
         fetchHistory();
+      } else {
+        setMarkedDates({});
+        setSelectedDate(null);
+        setSelectedData(null);
       }
-    }, [user])
+    }, [user]),
   );
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch(`${API_URL}/test-result/${(user as any).id}`);
+      const response = await fetch(`${API_URL}/data/test-result/${(user as any).id}`);
       const data = await response.json();
-
       if (!Array.isArray(data)) return;
-
       const dailyCheckIns = data.filter((item: any) => item.testType === 'Daily Check-In');
-
       const newMarkedDates: any = {};
-
       dailyCheckIns.forEach((item: any) => {
         const dateStr = item.createdAt.split('T')[0];
 
         let moodType = 'happy';
-        let color = '#4CAF50'; 
+        let color = '#4CAF50';
 
         if (item.score > 10) {
           moodType = 'stress';
-          color = '#FF5252'; 
+          color = '#FF5252';
         } else if (item.score > 5) {
           moodType = 'normal';
-          color = '#FFC107'; 
+          color = '#FFC107';
         }
 
         newMarkedDates[dateStr] = {
@@ -75,44 +73,40 @@ export default function MoodHistoryScreen() {
           data: {
             mood: moodType,
             score: item.score,
-            note: item.result, 
-            id: item.id
+            note: item.result,
+            id: item.id,
           },
         };
       });
 
       setMarkedDates(newMarkedDates);
     } catch (error) {
-      console.error("Lỗi lấy lịch sử:", error);
+      console.error('Lỗi lấy lịch sử:', error);
     }
   };
 
-  
   const finalMarkedDates = useMemo(() => {
-    
     const marked = { ...markedDates };
 
     if (selectedDate) {
-      
       const currentStyle = marked[selectedDate] ? marked[selectedDate].customStyles : {};
       const currentContainer = currentStyle.container ? currentStyle.container : {};
       const currentText = currentStyle.text ? currentStyle.text : {};
 
-      
       marked[selectedDate] = {
-        ...marked[selectedDate], 
+        ...marked[selectedDate],
         customStyles: {
           container: {
             ...currentContainer,
-            borderWidth: 2, 
-            borderColor: colors.text, 
+            borderWidth: 2,
+            borderColor: colors.text,
             borderRadius: 8,
           },
           text: {
             ...currentText,
-            color: marked[selectedDate] ? 'white' : colors.text, 
-          }
-        }
+            color: marked[selectedDate] ? 'white' : colors.text,
+          },
+        },
       };
     }
     return marked;
@@ -128,7 +122,7 @@ export default function MoodHistoryScreen() {
         if (mood === 'happy') counts.happy++;
         else if (mood === 'normal') counts.normal++;
         else if (mood === 'stress') counts.stress++;
-        
+
         total++;
       }
     });
@@ -206,7 +200,7 @@ export default function MoodHistoryScreen() {
               todayTextColor: colors.primary,
             }}
             markingType={'custom'}
-            markedDates={finalMarkedDates} 
+            markedDates={finalMarkedDates}
             onDayPress={onDayPress}
             enableSwipeMonths={true}
           />
@@ -220,29 +214,36 @@ export default function MoodHistoryScreen() {
             </Text>
             {selectedData ? (
               <View style={[styles.resultCard, { backgroundColor: colors.card }]}>
-                <View style={[styles.moodIcon, { 
-                    backgroundColor: selectedData.mood === 'happy' ? '#E8F5E9' : 
-                                     selectedData.mood === 'stress' ? '#FFEBEE' : '#FFF8E1' 
-                }]}>
-                  
-                  <Ionicons 
+                <View
+                  style={[
+                    styles.moodIcon,
+                    {
+                      backgroundColor:
+                        selectedData.mood === 'happy'
+                          ? '#E8F5E9'
+                          : selectedData.mood === 'stress'
+                          ? '#FFEBEE'
+                          : '#FFF8E1',
+                    },
+                  ]}
+                >
+                  <Ionicons
                     name={
-                      selectedData.mood === 'happy' 
-                        ? "happy" 
-                        : selectedData.mood === 'stress' 
-                          ? "sad" 
-                          : "remove-circle"
-                    } 
-                    size={32} 
+                      selectedData.mood === 'happy'
+                        ? 'happy'
+                        : selectedData.mood === 'stress'
+                        ? 'sad'
+                        : 'remove-circle'
+                    }
+                    size={32}
                     color={
-                      selectedData.mood === 'happy' 
-                        ? "#4CAF50" 
-                        : selectedData.mood === 'stress' 
-                          ? "#FF5252" 
-                          : "#FFC107"
-                    } 
+                      selectedData.mood === 'happy'
+                        ? '#4CAF50'
+                        : selectedData.mood === 'stress'
+                        ? '#FF5252'
+                        : '#FFC107'
+                    }
                   />
-
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.moodTitle, { color: colors.text }]}>

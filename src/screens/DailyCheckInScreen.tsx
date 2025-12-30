@@ -38,25 +38,22 @@ export default function DailyCheckInScreen() {
   const { colors, isDark } = useTheme();
   const navigation = useNavigation<any>();
   const [currentIndex, setCurrentIndex] = useState(0);
-  
-  // Lưu trữ câu trả lời để tính điểm (Mặc định 0 hết)
+
   const [answers, setAnswers] = useState<number[]>(new Array(questions.length).fill(0));
 
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
   const handleNext = (optionIndex: number) => {
-    // Lưu câu trả lời vào mảng
     const newAnswers = [...answers];
-    newAnswers[currentIndex] = optionIndex; // 0, 1, 2, 3 điểm
+    newAnswers[currentIndex] = optionIndex;
     setAnswers(newAnswers);
 
     setTimeout(() => {
       if (currentIndex < questions.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        // Tính tổng điểm
         const totalScore = newAnswers.reduce((a, b) => a + b, 0);
-        // Chuyển sang màn hình kết quả và gửi kèm điểm số
+
         navigation.replace('DailyResult', { score: totalScore });
       }
     }, 300);
@@ -100,11 +97,8 @@ export default function DailyCheckInScreen() {
 
             <View style={styles.optionsContainer}>
               {questions[currentIndex].options.map((option, index) => {
-                const isSelected = answers[currentIndex] === index; // Kiểm tra xem đã chọn chưa (nếu quay lại)
-                // Lưu ý: Lúc bấm thì ta dùng index truyền vào, nhưng để hiển thị ta có thể dùng state answers
-                // Tuy nhiên logic gốc của bạn dùng selectedOption state riêng, 
-                // ở đây tôi dùng answers để vừa lưu vừa hiển thị cho đồng bộ.
-                
+                const isSelected = answers[currentIndex] === index;
+
                 return (
                   <TouchableOpacity
                     key={index}
@@ -112,8 +106,11 @@ export default function DailyCheckInScreen() {
                       styles.optionButton,
                       {
                         borderColor: isSelected ? '#3995E9' : colors.border,
-                        backgroundColor:
-                          isSelected ? (isDark ? '#1E3A5F' : '#E3F2FD') : 'transparent',
+                        backgroundColor: isSelected
+                          ? isDark
+                            ? '#1E3A5F'
+                            : '#E3F2FD'
+                          : 'transparent',
                       },
                     ]}
                     onPress={() => handleNext(index)}

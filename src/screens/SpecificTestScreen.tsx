@@ -77,6 +77,7 @@ export default function SpecificTestScreen() {
     const totalScore = answers.reduce((a, b) => (b !== -1 ? a + b : a), 0);
 
     let isCritical = false;
+
     if (testType === 'depression') {
       const question10Score = answers[9];
       if (question10Score >= 2) {
@@ -89,6 +90,7 @@ export default function SpecificTestScreen() {
       score: totalScore,
       title: currentTest.title,
       isCritical: isCritical,
+      answers: answers,
     });
   };
 
@@ -103,6 +105,7 @@ export default function SpecificTestScreen() {
           <View style={{ width: 28 }} />
         </View>
 
+        {}
         <View style={styles.paletteContainer}>
           <ScrollView
             ref={scrollRef}
@@ -146,6 +149,7 @@ export default function SpecificTestScreen() {
           </ScrollView>
         </View>
 
+        {}
         <View style={styles.contentContainer}>
           <View style={[styles.card, { backgroundColor: colors.card }]}>
             <Text style={[styles.questionLabel, { color: colors.subText }]}>
@@ -205,6 +209,7 @@ export default function SpecificTestScreen() {
           </View>
         </View>
 
+        {}
         <View
           style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}
         >

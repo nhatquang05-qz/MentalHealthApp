@@ -48,13 +48,9 @@ export default function RegisterScreen() {
 
     const validContacts = contacts.filter((c) => c.name.trim() !== '' && c.phone.trim() !== '');
 
-    // Gọi hàm register từ AuthContext (đã kết nối API)
-    // Lưu ý: Backend hiện tại có thể chưa lưu contacts, nhưng ta cứ gửi lên để sẵn sàng cho nâng cấp sau.
     await register(name, email, password, validContacts);
 
-    // Sau khi đăng ký xong, backend yêu cầu đăng nhập. 
-    // Ta điều hướng người dùng quay lại màn hình Login.
-    navigation.goBack(); 
+    navigation.goBack();
   };
 
   return (
@@ -129,7 +125,7 @@ export default function RegisterScreen() {
           </View>
         </View>
 
-        {/* Phần SOS Contacts */}
+        {}
         <View style={styles.section}>
           <View
             style={{

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,14 +7,14 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext'; // Import AuthContext để lấy user ID
+import { useAuth } from '../context/AuthContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-// Đổi IP này thành IP máy tính của bạn
-const API_URL = 'http://10.0.116.186:3000/api/data';
+import { API_URL } from '../config';
 
 export default function DailyResultScreen() {
   const { colors, isDark } = useTheme();
@@ -22,14 +22,15 @@ export default function DailyResultScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  // Lấy điểm số từ params (nếu không có thì mặc định 0)
   const score = route.params?.score || 0;
-  
-  // State để hiển thị text kết quả
   const [resultText, setResultText] = useState('');
   const [description, setDescription] = useState('');
 
-  // Đánh giá kết quả dựa trên điểm số (0 - 15 điểm)
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
+
+  const processedRef = useRef(false);
+
   useEffect(() => {
     if (score <= 5) {
       setResultText('Trạng thái Tốt');
@@ -43,43 +44,61 @@ export default function DailyResultScreen() {
     }
   }, [score]);
 
-  const saveDailyResult = async () => {
-    if (!user) {
-      Alert.alert("Lỗi", "Vui lòng đăng nhập để lưu kết quả.");
-      return;
+  useEffect(() => {
+    if (user && resultText && !processedRef.current) {
+      saveDailyResult();
     }
+  }, [user, resultText]);
+
+  const saveDailyResult = async () => {
+    if (processedRef.current) return;
+    processedRef.current = true;
+    setIsSaving(true);
 
     try {
-      const response = await fetch(`${API_URL}/test-result`, {
+      const userIdToSave = (user as any).id;
+
+      if (!userIdToSave) {
+        console.error('Thiếu User ID, không thể lưu!');
+        setIsSaving(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/data/test-result`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: (user as any).id || 1, // Lấy ID user từ context
+          userId: userIdToSave,
           testType: 'Daily Check-In',
           score: score,
-          result: resultText
-        })
+          result: resultText,
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert('Thành công', 'Kết quả đã được lưu vào hệ thống!');
-        navigation.navigate('MainTabs');
+        setHasSaved(true);
+        console.log('Đã tự động lưu kết quả thành công!');
       } else {
-        Alert.alert('Thất bại', data.message || 'Không lưu được dữ liệu.');
+        Alert.alert('Lỗi lưu trữ', data.message || 'Không lưu được dữ liệu.');
+        processedRef.current = false;
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Lỗi', 'Không thể kết nối đến server backend.');
+      Alert.alert('Lỗi mạng', 'Không thể kết nối đến server backend.');
+      processedRef.current = false;
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#121212' : '#FFF9E1' }]}>
       <View style={styles.header}>
+        {}
         <TouchableOpacity onPress={() => navigation.navigate('MainTabs')} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={28} color={colors.text} />
+          <Ionicons name="close" size={28} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Kết quả khảo sát</Text>
         <View style={{ width: 28 }} />
@@ -95,25 +114,31 @@ export default function DailyResultScreen() {
             {resultText} (Điểm: {score}/15)
           </Text>
 
-          <Text style={[styles.resultDesc, { color: colors.subText }]}>
-            {description}
-          </Text>
+          <Text style={[styles.resultDesc, { color: colors.subText }]}>{description}</Text>
 
-          {/* Nút Lưu Kết Quả */}
-          <TouchableOpacity
-            style={[styles.primaryButton, { backgroundColor: '#3995E9' }]}
-            onPress={saveDailyResult}
-          >
-            <Text style={styles.primaryButtonText}>Lưu kết quả</Text>
-          </TouchableOpacity>
+          {}
+          <View style={styles.saveStatusContainer}>
+            {isSaving ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <ActivityIndicator size="small" color="#3995E9" />
+                <Text style={{ color: colors.subText }}>Đang lưu kết quả...</Text>
+              </View>
+            ) : hasSaved ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+                <Text style={{ color: '#4CAF50', fontWeight: 'bold' }}>Đã lưu vào nhật ký</Text>
+              </View>
+            ) : (
+              <Text style={{ color: '#FF5252' }}>Chưa lưu được kết quả</Text>
+            )}
+          </View>
 
+          {}
           <TouchableOpacity
-            style={[styles.secondaryButton, { borderColor: colors.border }]}
-            onPress={() => navigation.replace('DailyCheckIn')}
+            style={[styles.primaryButton, { backgroundColor: '#3995E9', marginTop: 15 }]}
+            onPress={() => navigation.navigate('MainTabs')}
           >
-            <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
-              Làm lại khảo sát
-            </Text>
+            <Text style={styles.primaryButtonText}>Hoàn tất</Text>
           </TouchableOpacity>
         </View>
 
@@ -169,7 +194,8 @@ const styles = StyleSheet.create({
   },
   iconContainer: { marginBottom: 20 },
   congratsText: { fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 12 },
-  resultDesc: { fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 30 },
+  resultDesc: { fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 20 },
+  saveStatusContainer: { marginBottom: 10, height: 30, justifyContent: 'center' },
   primaryButton: {
     width: '100%',
     paddingVertical: 16,
@@ -178,14 +204,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  secondaryButton: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 30,
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  secondaryButtonText: { fontSize: 16, fontWeight: '600' },
   recommendTitle: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
   recommendItem: {
     flexDirection: 'row',

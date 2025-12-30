@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,20 +8,30 @@ import {
   ScrollView,
   Modal,
   Linking,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { testData, MedicalContact } from '../data/testData';
 
+import { API_URL } from '../config';
+
 export default function SpecificResultScreen() {
   const { colors, isDark } = useTheme();
-
+  const { user } = useAuth();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const { title, score, testType, isCritical } = route.params;
+  const { title, score, testType, isCritical, answers, fromHistory } = route.params;
+
   const [modalVisible, setModalVisible] = useState(false);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
+  const processedRef = useRef(false);
 
   const currentTestData = testData[testType as keyof typeof testData];
 
@@ -32,7 +42,6 @@ export default function SpecificResultScreen() {
 
     if (isCritical) {
       const severeResult = currentTestData.results[currentTestData.results.length - 1];
-
       return {
         ...severeResult,
         description:
@@ -40,53 +49,124 @@ export default function SpecificResultScreen() {
         level: 'Cần Chú Ý Đặc Biệt',
       };
     }
-
     return normalResult;
   };
 
   const analysis = getResultAnalysis();
 
+  useEffect(() => {
+    if (user && !processedRef.current && !fromHistory) {
+      saveResultToDB();
+    }
+  }, [user, fromHistory]);
+
+  const saveResultToDB = async () => {
+    if (processedRef.current) return;
+    processedRef.current = true;
+    setIsSaving(true);
+
+    try {
+      const response = await fetch(`${API_URL}/data/test-result`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: (user as any).id,
+          testType: testType,
+          score: score,
+          result: analysis.level,
+          details: answers,
+        }),
+      });
+
+      if (response.ok) {
+        setHasSaved(true);
+      } else {
+        console.error('Lỗi lưu kết quả');
+      }
+    } catch (error) {
+      console.error('Lỗi mạng:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleCall = (phone: string) => {
     Linking.openURL(`tel:${phone}`);
   };
 
-  const renderMedicalContact = ({ item }: { item: MedicalContact }) => (
-    <TouchableOpacity
-      style={[
-        styles.contactItem,
-        { backgroundColor: isDark ? '#333' : '#FFF5F5', borderColor: colors.danger },
-      ]}
-      onPress={() => navigation.navigate('Map', { contact: item })}
-    >
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.contactName, { color: colors.text }]}>{item.name}</Text>
-        <Text style={[styles.contactAddress, { color: colors.subText }]}>{item.address}</Text>
+  const getAnswerColor = (point: number) => {
+    if (point === 0) return '#4CAF50';
+    if (point === 1) return '#FFC107';
+    if (point === 2) return '#FF9800';
+    if (point >= 3) return '#FF5252';
+    return colors.subText;
+  };
 
-        {}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-          <Ionicons name="location-sharp" size={14} color={colors.primary} />
-          <Text
-            style={{
-              color: colors.primary,
-              fontSize: 12,
-              fontWeight: '600',
-              marginLeft: 4,
-            }}
-          >
-            Xem vị trí trên bản đồ
-          </Text>
+  const renderReviewModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={reviewModalVisible}
+      onRequestClose={() => setReviewModalVisible(false)}
+    >
+      <View style={styles.modalContainer}>
+        <View style={[styles.modalContent, { backgroundColor: colors.card, height: '90%' }]}>
+          <View style={styles.modalHeader}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Chi tiết bài làm</Text>
+            <TouchableOpacity
+              onPress={() => setReviewModalVisible(false)}
+              style={styles.closeModalButton}
+            >
+              <Ionicons name="close-circle" size={30} color={colors.subText} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {currentTestData.questions.map((q, index) => {
+              const userPoint = answers ? answers[index] : -1;
+              const pointColor = getAnswerColor(userPoint);
+
+              const selectedOptionIndex = q.points.findIndex((p) => p === userPoint);
+              const selectedText =
+                selectedOptionIndex !== -1 ? q.options[selectedOptionIndex] : 'Không có dữ liệu';
+
+              return (
+                <View key={q.id} style={[styles.reviewItem, { borderColor: colors.border }]}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={[styles.reviewQuestionNum, { color: colors.subText }]}>
+                      Câu {index + 1}
+                    </Text>
+                    <View style={[styles.pointBadge, { backgroundColor: pointColor }]}>
+                      <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>
+                        {userPoint} điểm
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={[styles.reviewQuestionText, { color: colors.text }]}>{q.text}</Text>
+
+                  <View
+                    style={[
+                      styles.reviewAnswerBox,
+                      {
+                        backgroundColor: isDark ? '#333' : '#F5F5F5',
+                        borderLeftColor: pointColor,
+                        borderLeftWidth: 4,
+                      },
+                    ]}
+                  >
+                    <Text style={{ color: colors.text, fontStyle: 'italic' }}>
+                      Bạn chọn: <Text style={{ fontWeight: 'bold' }}>{selectedText}</Text>
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+            <View style={{ height: 40 }} />
+          </ScrollView>
         </View>
       </View>
-
-      <TouchableOpacity
-        onPress={(e) => {
-          handleCall(item.phone);
-        }}
-        style={styles.callButton}
-      >
-        <Ionicons name="call" size={20} color="#fff" />
-      </TouchableOpacity>
-    </TouchableOpacity>
+    </Modal>
   );
 
   return (
@@ -113,26 +193,44 @@ export default function SpecificResultScreen() {
           </View>
 
           <Text style={[styles.testTitle, { color: colors.subText }]}>{title}</Text>
-
           <Text style={[styles.scoreText, { color: analysis.color }]}>{analysis.level}</Text>
+          <Text style={[styles.scoreNum, { color: colors.text }]}>Điểm số: {score}/30</Text>
 
-          <Text style={[styles.scoreNum, { color: colors.text }]}>Điểm số thực tế: {score}/30</Text>
+          <Text style={[styles.resultDesc, { color: colors.text }]}>{analysis.description}</Text>
 
-          <Text
+          {}
+          {!fromHistory && (
+            <View style={{ marginVertical: 10, alignItems: 'center' }}>
+              {isSaving ? (
+                <Text style={{ color: colors.subText, fontSize: 12 }}>Đang lưu kết quả...</Text>
+              ) : hasSaved ? (
+                <Text style={{ color: '#4CAF50', fontSize: 12, fontWeight: 'bold' }}>
+                  ✓ Đã lưu vào hồ sơ
+                </Text>
+              ) : (
+                <Text style={{ color: '#FF5252', fontSize: 12 }}>Lưu thất bại</Text>
+              )}
+            </View>
+          )}
+
+          <TouchableOpacity
             style={[
-              styles.resultDesc,
-              { color: colors.text, fontWeight: isCritical ? '600' : '400' },
+              styles.detailButton,
+              { borderColor: colors.primary, backgroundColor: isDark ? '#333' : '#E3F2FD' },
             ]}
+            onPress={() => setReviewModalVisible(true)}
           >
-            {analysis.description}
-          </Text>
+            <Text style={[styles.detailButtonText, { color: colors.primary }]}>
+              👁️ Xem lại câu trả lời chi tiết
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.detailButton, { borderColor: analysis.color }]}
             onPress={() => setModalVisible(true)}
           >
             <Text style={[styles.detailButtonText, { color: analysis.color }]}>
-              📖 Xem lời khuyên chi tiết & Hỗ trợ
+              📖 Xem lời khuyên & Hỗ trợ
             </Text>
           </TouchableOpacity>
 
@@ -140,35 +238,12 @@ export default function SpecificResultScreen() {
             style={[styles.primaryButton, { backgroundColor: colors.primary }]}
             onPress={() => navigation.navigate('MainTabs', { screen: 'Survey' })}
           >
-            <Text style={styles.primaryButtonText}>Hoàn tất</Text>
+            <Text style={styles.primaryButtonText}>{fromHistory ? 'Quay lại' : 'Hoàn tất'}</Text>
           </TouchableOpacity>
         </View>
-
-        <Text style={[styles.recommendTitle, { color: colors.text }]}>Lời khuyên nhanh</Text>
-
-        {analysis.advice.map((item, index) => (
-          <View
-            key={index}
-            style={[styles.recommendItem, { backgroundColor: isDark ? '#1E1E1E' : '#F0F0F0' }]}
-          >
-            <View style={[styles.recommendIcon, { backgroundColor: '#E3F2FD' }]}>
-              <Ionicons name="bulb" size={24} color={colors.primary} />
-            </View>
-            <View style={styles.recommendContent}>
-              <Text style={[styles.recommendName, { color: colors.text }]}>
-                Phương pháp {index + 1}
-              </Text>
-              <Text style={[styles.recommendTime, { color: colors.subText }]}>{item}</Text>
-            </View>
-          </View>
-        ))}
-
-        <Text style={styles.sourceText}>Nguồn: {currentTestData.source}</Text>
-        <Text style={styles.disclaimerText}>
-          *Kết quả chỉ mang tính chất tham khảo, không thay thế chẩn đoán y khoa.*
-        </Text>
       </ScrollView>
 
+      {}
       <Modal
         animationType="slide"
         transparent={true}
@@ -179,46 +254,19 @@ export default function SpecificResultScreen() {
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Lời khuyên chuyên sâu</Text>
-              <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                style={styles.closeModalButton}
-              >
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Ionicons name="close-circle" size={30} color={colors.subText} />
               </TouchableOpacity>
             </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView>
               <Text style={[styles.modalText, { color: colors.text }]}>{analysis.details}</Text>
-
-              {(isCritical ||
-                (analysis.medicalContacts && analysis.medicalContacts.length > 0)) && (
-                <View style={styles.contactSection}>
-                  <View style={styles.divider} />
-                  <Text style={[styles.contactSectionTitle, { color: colors.danger }]}>
-                    ⚠️ Địa chỉ hỗ trợ y tế uy tín
-                  </Text>
-                  <Text
-                    style={{
-                      color: colors.subText,
-                      marginBottom: 10,
-                      fontSize: 13,
-                    }}
-                  >
-                    Dựa trên tình trạng hiện tại, chúng tôi khuyến nghị bạn liên hệ chuyên gia:
-                  </Text>
-
-                  {analysis.medicalContacts?.map((contact, index) => (
-                    <View key={index} style={{ marginBottom: 10 }}>
-                      {renderMedicalContact({ item: contact })}
-                    </View>
-                  ))}
-                </View>
-              )}
-              <View style={{ height: 40 }} />
             </ScrollView>
           </View>
         </View>
       </Modal>
+
+      {}
+      {renderReviewModal()}
     </SafeAreaView>
   );
 }
@@ -251,7 +299,7 @@ const styles = StyleSheet.create({
   testTitle: { fontSize: 16, fontWeight: '500', marginBottom: 8 },
   scoreText: { fontSize: 28, fontWeight: 'bold', marginBottom: 5, textAlign: 'center' },
   scoreNum: { fontSize: 14, fontWeight: '600', marginBottom: 16, opacity: 0.7 },
-  resultDesc: { fontSize: 15, textAlign: 'center', lineHeight: 24, marginBottom: 20 },
+  resultDesc: { fontSize: 15, textAlign: 'center', lineHeight: 24, marginBottom: 10 },
   primaryButton: { width: '100%', paddingVertical: 16, borderRadius: 30, alignItems: 'center' },
   primaryButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   detailButton: {
@@ -264,25 +312,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   detailButtonText: { fontSize: 15, fontWeight: '600' },
-  recommendTitle: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
-  recommendItem: {
-    flexDirection: 'row',
-    padding: 16,
-    borderRadius: 20,
-    marginBottom: 12,
-    alignItems: 'center',
-  },
-  recommendIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  recommendContent: { flex: 1 },
-  recommendName: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  recommendTime: { fontSize: 14, lineHeight: 20 },
   modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { height: '80%', borderTopLeftRadius: 25, borderTopRightRadius: 25, padding: 20 },
   modalHeader: {
@@ -294,34 +323,21 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 20, fontWeight: 'bold' },
   closeModalButton: { padding: 5 },
   modalText: { fontSize: 16, lineHeight: 26, textAlign: 'justify' },
-  contactSection: { marginTop: 20 },
-  divider: { height: 1, backgroundColor: '#ccc', marginVertical: 15, opacity: 0.5 },
-  contactSectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
-  contactItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderLeftWidth: 5,
+  reviewItem: {
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    paddingBottom: 15,
   },
-  contactName: { fontWeight: 'bold', fontSize: 15, marginBottom: 4 },
-  contactAddress: { fontSize: 12 },
-  callButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#34C759',
+  reviewQuestionNum: { fontSize: 12, fontWeight: 'bold', marginBottom: 4 },
+  reviewQuestionText: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
+  reviewAnswerBox: {
+    padding: 10,
+    borderRadius: 8,
+  },
+  pointBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
   },
-  sourceText: {
-    textAlign: 'center',
-    fontSize: 12,
-    marginTop: 20,
-    fontStyle: 'italic',
-    opacity: 0.6,
-  },
-  disclaimerText: { textAlign: 'center', fontSize: 11, marginBottom: 20, opacity: 0.6 },
 });
