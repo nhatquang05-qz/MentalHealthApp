@@ -48,15 +48,14 @@ export default function HomeScreen() {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  
-  // State cho thông báo
+
   const [unreadCount, setUnreadCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       if (user) {
         checkStatusAndStreak();
-        fetchUnreadCount(); // Gọi hàm lấy số thông báo
+        fetchUnreadCount();
       } else {
         setHasCheckedInToday(false);
         setCurrentStreak(0);
@@ -65,7 +64,6 @@ export default function HomeScreen() {
     }, [user]),
   );
 
-  // Hàm lấy số lượng thông báo chưa đọc
   const fetchUnreadCount = async () => {
     if (!user) return;
     try {
@@ -126,9 +124,8 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // Refresh cả streak và thông báo
-    Promise.all([checkStatusAndStreak(), fetchUnreadCount()])
-      .finally(() => setRefreshing(false));
+
+    Promise.all([checkStatusAndStreak(), fetchUnreadCount()]).finally(() => setRefreshing(false));
   }, []);
 
   const handleEmotionSelect = (emotionName: string) => {
@@ -163,19 +160,19 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* HEADER */}
+        {}
         <View style={styles.header}>
           <View style={styles.soulCareLogo}>
             <Text style={styles.soulCareText}>SoulCare</Text>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            {/* SOS BUTTON */}
+            {}
             <TouchableOpacity style={styles.sosButton} onPress={() => navigation.navigate('SOS')}>
               <Text style={{ fontWeight: '900', color: '#fff', fontSize: 12 }}>SOS</Text>
             </TouchableOpacity>
 
-            {/* STREAK */}
+            {}
             <View
               style={[styles.streakContainer, { backgroundColor: isDark ? '#333' : '#FFF0E6' }]}
             >
@@ -183,8 +180,8 @@ export default function HomeScreen() {
               <Text style={[styles.streakText, { color: '#FF6B6B' }]}>{currentStreak}</Text>
             </View>
 
-            {/* NOTIFICATION BUTTON - ĐÃ SỬA */}
-            <TouchableOpacity 
+            {}
+            <TouchableOpacity
               style={styles.notificationButton}
               onPress={() => navigation.navigate('Notifications')}
             >
@@ -198,7 +195,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* DAILY CHECK-IN CARD */}
+        {}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View
             style={{
@@ -274,7 +271,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* CHART CARD */}
+        {}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.cardTitle, { color: colors.text }]}>Biểu đồ tâm trạng</Text>
           <Text style={[styles.cardSubtitle, { color: colors.subText }]}>Tuần trước</Text>
@@ -308,11 +305,10 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* SHORTCUTS / TIỆN ÍCH */}
+        {}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Tiện ích</Text>
 
         <View style={{ flexDirection: 'row', gap: 15, flexWrap: 'wrap' }}>
-          
           <TouchableOpacity
             style={[styles.shortcutCard, { backgroundColor: colors.card, width: '47%' }]}
             onPress={() => navigation.navigate('Survey')}
@@ -357,12 +353,25 @@ export default function HomeScreen() {
             <Text style={{ fontSize: 12, color: colors.subText }}>Lời khuyên mỗi ngày</Text>
           </TouchableOpacity>
 
-          {/* NÚT BẢN ĐỒ Y TẾ - MỚI THÊM */}
+          {}
           <TouchableOpacity
-            style={[styles.shortcutCard, { backgroundColor: colors.card, width: '100%', flexDirection: 'row', alignItems: 'center' }]}
+            style={[
+              styles.shortcutCard,
+              {
+                backgroundColor: colors.card,
+                width: '100%',
+                flexDirection: 'row',
+                alignItems: 'center',
+              },
+            ]}
             onPress={() => navigation.navigate('Map')}
           >
-            <View style={[styles.iconBox, { backgroundColor: '#E1F5FE', marginBottom: 0, marginRight: 15 }]}>
+            <View
+              style={[
+                styles.iconBox,
+                { backgroundColor: '#E1F5FE', marginBottom: 0, marginRight: 15 },
+              ]}
+            >
               <Ionicons name="map-outline" size={24} color="#0288D1" />
             </View>
             <View>
@@ -373,7 +382,12 @@ export default function HomeScreen() {
                 Tìm bệnh viện & cơ sở tâm lý gần bạn
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.subText} style={{ marginLeft: 'auto' }} />
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.subText}
+              style={{ marginLeft: 'auto' }}
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -484,9 +498,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative', // Thêm relative để badge hiển thị đúng
+    position: 'relative',
   },
-  // Style cho badge thông báo
+
   badge: {
     position: 'absolute',
     right: -2,
@@ -498,12 +512,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#fff'
+    borderColor: '#fff',
   },
   badgeText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
 
   sosButton: {

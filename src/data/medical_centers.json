@@ -1,0 +1,282 @@
+[
+  {
+    "id": 1,
+    "name": "Bệnh viện Bạch Mai",
+    "address": "78 Giải Phóng, Phương Mai, Đống Đa, Hà Nội",
+    "phone": "024 3869 3731",
+    "coordinate": { "latitude": 21.0025, "longitude": 105.8428 }
+  },
+  {
+    "id": 2,
+    "name": "Bệnh viện Hữu nghị Việt Đức",
+    "address": "40 Tràng Thi, Hàng Bông, Hoàn Kiếm, Hà Nội",
+    "phone": "024 3825 3531",
+    "coordinate": { "latitude": 21.0285, "longitude": 105.8482 }
+  },
+  {
+    "id": 3,
+    "name": "Bệnh viện Trung ương Quân đội 108",
+    "address": "1 Trần Hưng Đạo, Bạch Đằng, Hai Bà Trưng, Hà Nội",
+    "phone": "024 6278 4168",
+    "coordinate": { "latitude": 21.0195, "longitude": 105.8596 }
+  },
+  {
+    "id": 4,
+    "name": "Bệnh viện Nhi Trung ương",
+    "address": "18/879 La Thành, Láng Thượng, Đống Đa, Hà Nội",
+    "phone": "024 6273 8532",
+    "coordinate": { "latitude": 21.0267, "longitude": 105.8087 }
+  },
+  {
+    "id": 5,
+    "name": "Bệnh viện Đại học Y Hà Nội",
+    "address": "1 Tôn Thất Tùng, Kim Liên, Đống Đa, Hà Nội",
+    "phone": "1900 6422",
+    "coordinate": { "latitude": 21.0033, "longitude": 105.8306 }
+  },
+  {
+    "id": 6,
+    "name": "Bệnh viện K - Cơ sở Tân Triều",
+    "address": "30 Cầu Bươu, Tân Triều, Thanh Trì, Hà Nội",
+    "phone": "090 469 08 18",
+    "coordinate": { "latitude": 20.9575, "longitude": 105.7925 }
+  },
+  {
+    "id": 7,
+    "name": "Bệnh viện Đa khoa Quốc tế Vinmec Times City",
+    "address": "458 Minh Khai, Vĩnh Tuy, Hai Bà Trưng, Hà Nội",
+    "phone": "024 3974 3556",
+    "coordinate": { "latitude": 20.9961, "longitude": 105.8679 }
+  },
+  {
+    "id": 8,
+    "name": "Bệnh viện Đa khoa Xanh Pôn",
+    "address": "12 Chu Văn An, Điện Biên, Ba Đình, Hà Nội",
+    "phone": "024 3823 3075",
+    "coordinate": { "latitude": 21.0315, "longitude": 105.8386 }
+  },
+  {
+    "id": 9,
+    "name": "Bệnh viện Chợ Rẫy",
+    "address": "201B Nguyễn Chí Thanh, Phường 12, Quận 5, TP.HCM",
+    "phone": "028 3855 4137",
+    "coordinate": { "latitude": 10.7576, "longitude": 106.6596 }
+  },
+  {
+    "id": 10,
+    "name": "Bệnh viện Đại học Y Dược TP.HCM",
+    "address": "215 Hồng Bàng, Phường 11, Quận 5, TP.HCM",
+    "phone": "028 3855 4269",
+    "coordinate": { "latitude": 10.7552, "longitude": 106.6651 }
+  },
+  {
+    "id": 11,
+    "name": "Bệnh viện Nhân dân 115",
+    "address": "527 Sư Vạn Hạnh, Phường 12, Quận 10, TP.HCM",
+    "phone": "028 3865 2368",
+    "coordinate": { "latitude": 10.7762, "longitude": 106.6672 }
+  },
+  {
+    "id": 12,
+    "name": "Bệnh viện Từ Dũ",
+    "address": "284 Cống Quỳnh, Phường Phạm Ngũ Lão, Quận 1, TP.HCM",
+    "phone": "028 5404 2829",
+    "coordinate": { "latitude": 10.7673, "longitude": 106.6833 }
+  },
+  {
+    "id": 13,
+    "name": "Bệnh viện Nhi đồng 1",
+    "address": "341 Sư Vạn Hạnh, Phường 10, Quận 10, TP.HCM",
+    "phone": "028 3927 1119",
+    "coordinate": { "latitude": 10.7712, "longitude": 106.6718 }
+  },
+  {
+    "id": 14,
+    "name": "Bệnh viện Thống Nhất",
+    "address": "1 Lý Thường Kiệt, Phường 7, Tân Bình, TP.HCM",
+    "phone": "028 3869 0277",
+    "coordinate": { "latitude": 10.7909, "longitude": 106.6565 }
+  },
+  {
+    "id": 15,
+    "name": "Bệnh viện Trung ương Huế",
+    "address": "16 Lê Lợi, Vĩnh Ninh, Thành phố Huế, Thừa Thiên Huế",
+    "phone": "0234 3822 325",
+    "coordinate": { "latitude": 16.4637, "longitude": 107.592 }
+  },
+  {
+    "id": 16,
+    "name": "Bệnh viện Đà Nẵng",
+    "address": "124 Hải Phòng, Thạch Thang, Hải Châu, Đà Nẵng",
+    "phone": "0236 3821 118",
+    "coordinate": { "latitude": 16.0772, "longitude": 108.2185 }
+  },
+  {
+    "id": 17,
+    "name": "Bệnh viện C Đà Nẵng",
+    "address": "122 Hải Phòng, Thạch Thang, Hải Châu, Đà Nẵng",
+    "phone": "0236 3821 480",
+    "coordinate": { "latitude": 16.0768, "longitude": 108.219 }
+  },
+  {
+    "id": 18,
+    "name": "Bệnh viện Hoàn Mỹ Đà Nẵng",
+    "address": "291 Nguyễn Văn Linh, Thạc Gián, Thanh Khê, Đà Nẵng",
+    "phone": "0236 3650 676",
+    "coordinate": { "latitude": 16.0594, "longitude": 108.2081 }
+  },
+  {
+    "id": 19,
+    "name": "Bệnh viện Hữu nghị Việt Tiệp",
+    "address": "1 Nhà Thương, Cát Dài, Lê Chân, Hải Phòng",
+    "phone": "0225 3700 436",
+    "coordinate": { "latitude": 20.8546, "longitude": 106.6775 }
+  },
+  {
+    "id": 20,
+    "name": "Bệnh viện Đa khoa Quốc tế Hải Phòng",
+    "address": "124 Nguyễn Đức Cảnh, Cát Dài, Lê Chân, Hải Phòng",
+    "phone": "0225 3955 888",
+    "coordinate": { "latitude": 20.8533, "longitude": 106.6782 }
+  },
+  {
+    "id": 21,
+    "name": "Bệnh viện Đa khoa Trung ương Cần Thơ",
+    "address": "315 Nguyễn Văn Linh, An Khánh, Ninh Kiều, Cần Thơ",
+    "phone": "0292 3820 071",
+    "coordinate": { "latitude": 10.0275, "longitude": 105.7602 }
+  },
+  {
+    "id": 22,
+    "name": "Bệnh viện Quân y 121",
+    "address": "1 Đường 30/4, An Lạc, Ninh Kiều, Cần Thơ",
+    "phone": "0292 3820 568",
+    "coordinate": { "latitude": 10.0381, "longitude": 105.7825 }
+  },
+  {
+    "id": 23,
+    "name": "Bệnh viện Đa khoa Tỉnh Bình Dương",
+    "address": "5 Phạm Ngọc Thạch, Hiệp Thành, Thủ Dầu Một, Bình Dương",
+    "phone": "0274 3822 920",
+    "coordinate": { "latitude": 11.0016, "longitude": 106.6663 }
+  },
+  {
+    "id": 24,
+    "name": "Bệnh viện Quốc tế Becamex",
+    "address": "Đại lộ Bình Dương, Lái Thiêu, Thuận An, Bình Dương",
+    "phone": "0274 3681 681",
+    "coordinate": { "latitude": 10.9238, "longitude": 106.7032 }
+  },
+  {
+    "id": 25,
+    "name": "Bệnh viện Đa khoa Đồng Nai",
+    "address": "2 Đồng Khởi, Tân Hiệp, Thành phố Biên Hòa, Đồng Nai",
+    "phone": "0251 3894 368",
+    "coordinate": { "latitude": 10.9631, "longitude": 106.8485 }
+  },
+  {
+    "id": 26,
+    "name": "Bệnh viện Đa khoa Tỉnh Thanh Hóa",
+    "address": "181 Hải Thượng Lãn Ông, Đông Vệ, Thanh Hóa",
+    "phone": "0237 3951 467",
+    "coordinate": { "latitude": 19.7891, "longitude": 105.7794 }
+  },
+  {
+    "id": 27,
+    "name": "Bệnh viện Hữu nghị Đa khoa Nghệ An",
+    "address": "KM5, Đại lộ Lê Nin, Nghi Phú, Thành phố Vinh, Nghệ An",
+    "phone": "0886 234 222",
+    "coordinate": { "latitude": 18.6942, "longitude": 105.6791 }
+  },
+  {
+    "id": 28,
+    "name": "Bệnh viện Đa khoa Tỉnh Quảng Ninh",
+    "address": "Tuệ Tĩnh, Bạch Đằng, Hạ Long, Quảng Ninh",
+    "phone": "0203 3825 499",
+    "coordinate": { "latitude": 20.9536, "longitude": 107.0863 }
+  },
+  {
+    "id": 29,
+    "name": "Bệnh viện Đa khoa Tỉnh Khánh Hòa",
+    "address": "19 Yersin, Lộc Thọ, Nha Trang, Khánh Hòa",
+    "phone": "0258 3822 175",
+    "coordinate": { "latitude": 12.2475, "longitude": 109.1947 }
+  },
+  {
+    "id": 30,
+    "name": "Bệnh viện Đa khoa Vùng Tây Nguyên",
+    "address": "184 Trần Quý Cáp, Tự An, Buôn Ma Thuột, Đắk Lắk",
+    "phone": "0262 3852 407",
+    "coordinate": { "latitude": 12.6705, "longitude": 108.0538 }
+  },
+  {
+    "id": 31,
+    "name": "Bệnh viện Bà Rịa",
+    "address": "686 Võ Văn Kiệt, Long Tâm, Bà Rịa, Bà Rịa - Vũng Tàu",
+    "phone": "0254 3731 115",
+    "coordinate": { "latitude": 10.5186, "longitude": 107.1853 }
+  },
+  {
+    "id": 32,
+    "name": "Bệnh viện Đa khoa Lâm Đồng",
+    "address": "1 Phạm Ngọc Thạch, Phường 6, Đà Lạt, Lâm Đồng",
+    "phone": "0263 3827 528",
+    "coordinate": { "latitude": 11.9442, "longitude": 108.4357 }
+  },
+  {
+    "id": 33,
+    "name": "Bệnh viện Đa khoa Trung ương Thái Nguyên",
+    "address": "479 Lương Ngọc Quyến, Phan Đình Phùng, Thái Nguyên",
+    "phone": "0208 3855 125",
+    "coordinate": { "latitude": 21.5896, "longitude": 105.8164 }
+  },
+  {
+    "id": 34,
+    "name": "Bệnh viện Đa khoa Tỉnh Bắc Ninh",
+    "address": "Đường Nguyễn Quyền, Võ Cường, Bắc Ninh",
+    "phone": "0222 3821 247",
+    "coordinate": { "latitude": 21.1738, "longitude": 106.0601 }
+  },
+  {
+    "id": 35,
+    "name": "Bệnh viện Đa khoa Tỉnh Nam Định",
+    "address": "2 Trần Quốc Toản, Ngô Quyền, Nam Định",
+    "phone": "0228 3849 224",
+    "coordinate": { "latitude": 20.4289, "longitude": 106.1762 }
+  },
+  {
+    "id": 36,
+    "name": "Bệnh viện Đa khoa Tỉnh Hà Tĩnh",
+    "address": "75 Hải Thượng Lãn Ông, Bắc Hà, Hà Tĩnh",
+    "phone": "0239 3855 464",
+    "coordinate": { "latitude": 18.3407, "longitude": 105.8973 }
+  },
+  {
+    "id": 37,
+    "name": "Bệnh viện Đa khoa Bình Định",
+    "address": "106 Nguyễn Huệ, Trần Phú, Quy Nhơn, Bình Định",
+    "phone": "0256 3822 186",
+    "coordinate": { "latitude": 13.7715, "longitude": 109.2274 }
+  },
+  {
+    "id": 38,
+    "name": "Bệnh viện Đa khoa Kiên Giang",
+    "address": "46 Lê Lợi, Vĩnh Thanh Vân, Rạch Giá, Kiên Giang",
+    "phone": "0297 3863 328",
+    "coordinate": { "latitude": 10.0102, "longitude": 105.0805 }
+  },
+  {
+    "id": 39,
+    "name": "Bệnh viện Đa khoa Tiền Giang",
+    "address": "02 Hùng Vương, Phường 1, Mỹ Tho, Tiền Giang",
+    "phone": "0273 3872 380",
+    "coordinate": { "latitude": 10.3556, "longitude": 106.3662 }
+  },
+  {
+    "id": 40,
+    "name": "Bệnh viện Đa khoa Đồng Tháp",
+    "address": "144 Mai Văn Khải, Mỹ Tân, Cao Lãnh, Đồng Tháp",
+    "phone": "0277 3851 283",
+    "coordinate": { "latitude": 10.4682, "longitude": 105.6417 }
+  }
+]
