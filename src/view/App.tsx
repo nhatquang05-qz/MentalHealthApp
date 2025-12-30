@@ -4,15 +4,18 @@ import AppNavigator from '../components/AppNavigator';
 import { StatusBar } from 'react-native';
 import { ThemeProvider } from '../context/ThemeContext';
 import { AuthProvider } from '../context/AuthContext';
+import { MusicProvider } from '../context/MusicContext';
 
 export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <NavigationContainer>
-          <AppNavigator />
-          <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
-        </NavigationContainer>
+        <MusicProvider>
+          <NavigationContainer>
+            <AppNavigator />
+            <StatusBar barStyle="default" backgroundColor="transparent" translucent={true} />
+          </NavigationContainer>
+        </MusicProvider>
       </AuthProvider>
     </ThemeProvider>
   );

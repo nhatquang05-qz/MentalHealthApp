@@ -104,6 +104,8 @@ export default function HomeScreen() {
   };
 
   const checkStatusAndStreak = async () => {
+    if (!user) return;
+
     try {
       const response = await fetch(`${API_URL}/data/test-result/${(user as any).id}`);
       const data = await response.json();
@@ -160,8 +162,13 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+
+    if (!user) {
+      setTimeout(() => setRefreshing(false), 500);
+      return;
+    }
     Promise.all([checkStatusAndStreak(), fetchUnreadCount()]).finally(() => setRefreshing(false));
-  }, []);
+  }, [user]);
 
   const handleEmotionSelect = (emotionName: string) => {
     setSelectedEmotion(emotionName);
