@@ -9,7 +9,7 @@ import {
   Alert,
   Dimensions,
 } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'; // <--- Thêm import này
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -58,7 +58,6 @@ export default function QuoteScreen() {
       <LinearGradient colors={gradientColors} style={styles.background} />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
@@ -70,9 +69,7 @@ export default function QuoteScreen() {
           <View style={{ width: 40 }} />
         </View>
 
-        {/* Nội dung chính */}
         <View style={styles.contentContainer}>
-          {/* Icon nền mờ (Đã sửa tên icon) */}
           <MaterialCommunityIcons
             name="format-quote-open"
             size={120}
@@ -81,7 +78,6 @@ export default function QuoteScreen() {
           />
 
           <View style={styles.quoteBox}>
-            {/* Dấu mở ngoặc */}
             <MaterialCommunityIcons
               name="format-quote-open"
               size={40}
@@ -91,7 +87,6 @@ export default function QuoteScreen() {
 
             <Text style={styles.quoteText}>{currentQuote}</Text>
 
-            {/* Dấu đóng ngoặc */}
             <MaterialCommunityIcons
               name="format-quote-close"
               size={40}
@@ -101,7 +96,6 @@ export default function QuoteScreen() {
           </View>
         </View>
 
-        {/* Footer */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
             <Ionicons name="share-social" size={24} color="#fff" />
@@ -180,7 +174,7 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     color: '#fff',
     textAlign: 'center',
-    lineHeight: 44, // Tăng khoảng cách dòng cho dễ đọc
+    lineHeight: 44,
     fontStyle: 'italic',
     textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 1, height: 1 },

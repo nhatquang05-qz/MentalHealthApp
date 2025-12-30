@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  SafeAreaView,
+  Dimensions,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
@@ -55,7 +63,15 @@ export default function DailyCheckInScreen() {
         setCurrentIndex(currentIndex + 1);
       } else {
         const totalScore = newAnswers.reduce((a, b) => a + b, 0);
-        navigation.replace('DailyResult', { score: totalScore });
+
+        Alert.alert('Bạn đã hoàn thành đánh giá hàng ngày', 'Hãy xem lịch cảm xúc ngay nhé', [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.replace('DailyResult', { score: totalScore });
+            },
+          },
+        ]);
       }
     }, 300);
   };
